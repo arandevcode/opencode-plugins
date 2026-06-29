@@ -1,0 +1,74 @@
+{
+  "name": "@arandevcode/opencode-quota-extended",
+  "version": "0.1.1",
+  "description": "OpenCode plugin: quota usage cards with progress bars (5h / weekly / monthly) for OpenAI, GitHub Copilot and OpenCode Go in the TUI sidebar.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./tui": {
+      "types": "./dist/tui.d.ts",
+      "default": "./dist/tui.tsx"
+    }
+  },
+  "bin": {
+    "opencode-quota": "./bin/quota.mjs"
+  },
+  "oc-plugin": [
+    "server",
+    "tui"
+  ],
+  "files": [
+    "dist",
+    "bin",
+    "images",
+    "README.md",
+    "README-es.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/postbuild.mjs",
+    "prepublish": "tsc && node scripts/postbuild.mjs",
+    "build:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "quota": "node bin/quota.mjs",
+    "setup": "node scripts/setup.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "xdg-basedir": "^5.1.0"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": "^1.4.3",
+    "@opentui/core": "^0.4.1",
+    "@opentui/solid": "^0.4.1",
+    "solid-js": "^1.9.12"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.15.13",
+    "@opentui/core": "^0.4.1",
+    "@opentui/solid": "^0.4.1",
+    "@types/node": "^22.0.0",
+    "solid-js": "^1.9.12",
+    "typescript": "^5.8.0",
+    "vitest": "^4.0.17",
+    "zod": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "arandevcode",
+  "license": "MIT"
+}

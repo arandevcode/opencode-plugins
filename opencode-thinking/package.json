@@ -1,0 +1,65 @@
+{
+  "name": "@arandevcode/opencode-thinking",
+  "version": "0.1.2",
+  "description": "Visual thinking indicators for opencode — animated border, yellow working bar, and construction sidebar",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tui": {
+      "types": "./dist/tui.d.ts",
+      "default": "./dist/tui.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "thinking",
+    "visualizer",
+    "tui"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "arandevcode",
+  "license": "MIT",
+  "oc-plugin": [
+    "server",
+    "tui"
+  ],
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.16.0",
+    "@opentui/core": "^0.4.1",
+    "@opentui/solid": "^0.4.1",
+    "solid-js": ">=1.8.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.16.0",
+    "@opentui/core": "^0.4.1",
+    "@opentui/keymap": "^0.4.1",
+    "@opentui/solid": "^0.4.1",
+    "@types/node": "^25.9.3",
+    "solid-js": "^1.8.17",
+    "typescript": "^5.4.0"
+  },
+  "files": [
+    "dist",
+    "images",
+    "LICENSE",
+    "src",
+    "example.opencode.json"
+  ]
+}
