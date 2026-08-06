@@ -1,0 +1,1 @@
+{"version":3,"file":"opencode-go.d.ts","sourceRoot":"","sources":["../../src/providers/opencode-go.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;GAUG;AACH,OAAO,KAAK,EAAE,QAAQ,EAAmB,MAAM,YAAY,CAAC;AAyC5D,+DAA+D;AAC/D,MAAM,WAAW,yBAAyB;IACxC,EAAE,EAAE,MAAM,CAAC;IACX,KAAK,EAAE,MAAM,CAAC;CACf;AAED,wBAAgB,wBAAwB,CAAC,IAAI,EAAE,yBAAyB,GAAG,QAAQ,CAgFlF;AAED,eAAO,MAAM,kBAAkB,EAAE,QAG/B,CAAC"}
