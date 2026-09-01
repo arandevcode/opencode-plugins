@@ -28,11 +28,11 @@ const WINDOWS: { field: string; id: WindowId; label: string }[] = [
 
 const RE_FIELD_PCT_FIRST = (field: string) =>
   new RegExp(
-    `${field}[^=]*=\\s*\\{[^}]*?usagePercent\\s*:\\s*(\\d+)[^}]*?resetInSec\\s*:\\s*(\\d+)`,
+    `${field}[^=]*=\\s*\\{[^}]*?usagePercent\\s*:\\s*(\\d+(?:\\.\\d+)?)[^}]*?resetInSec\\s*:\\s*(\\d+)`,
   );
 const RE_FIELD_RESET_FIRST = (field: string) =>
   new RegExp(
-    `${field}[^=]*=\\s*\\{[^}]*?resetInSec\\s*:\\s*(\\d+)[^}]*?usagePercent\\s*:\\s*(\\d+)`,
+    `${field}[^=]*=\\s*\\{[^}]*?resetInSec\\s*:\\s*(\\d+)[^}]*?usagePercent\\s*:\\s*(\\d+(?:\\.\\d+)?)`,
   );
 
 function parseWindow(

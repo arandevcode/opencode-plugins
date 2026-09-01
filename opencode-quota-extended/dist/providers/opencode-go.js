@@ -9,8 +9,8 @@ const WINDOWS = [
     { field: "weeklyUsage", id: "weekly", label: "Weekly" },
     { field: "monthlyUsage", id: "monthly", label: "Monthly" },
 ];
-const RE_FIELD_PCT_FIRST = (field) => new RegExp(`${field}[^=]*=\\s*\\{[^}]*?usagePercent\\s*:\\s*(\\d+)[^}]*?resetInSec\\s*:\\s*(\\d+)`);
-const RE_FIELD_RESET_FIRST = (field) => new RegExp(`${field}[^=]*=\\s*\\{[^}]*?resetInSec\\s*:\\s*(\\d+)[^}]*?usagePercent\\s*:\\s*(\\d+)`);
+const RE_FIELD_PCT_FIRST = (field) => new RegExp(`${field}[^=]*=\\s*\\{[^}]*?usagePercent\\s*:\\s*(\\d+(?:\\.\\d+)?)[^}]*?resetInSec\\s*:\\s*(\\d+)`);
+const RE_FIELD_RESET_FIRST = (field) => new RegExp(`${field}[^=]*=\\s*\\{[^}]*?resetInSec\\s*:\\s*(\\d+)[^}]*?usagePercent\\s*:\\s*(\\d+(?:\\.\\d+)?)`);
 function parseWindow(html, field) {
     const m1 = html.match(RE_FIELD_PCT_FIRST(field));
     if (m1 && m1[1] !== undefined && m1[2] !== undefined) {
