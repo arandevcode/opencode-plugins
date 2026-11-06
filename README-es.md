@@ -19,7 +19,7 @@ Suite de plugins para [OpenCode](https://opencode.ai).
 | Plugin | Tipo | npm | Versión | Descripción |
 |--------|------|-----|---------|-------------|
 | opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.3.0 | Indicadores animados de pensamiento con borde arcoíris e IDLE según el tema |
-| opencode-quota-extended | `🧩 plugin` | `@arandevcode/opencode-quota-extended` | 0.3.1 | Cuota, gasto y balance de OpenCode Go vía API key personal, con tarjetas por ventana + CLI |
+| opencode-quota-extended | `🧩 plugin` | `@arandevcode/opencode-quota-extended` | 0.3.2 | Cuota, gasto y balance de OpenCode Go vía API key personal, con tarjetas por ventana + CLI |
 
 ## Instalación
 
