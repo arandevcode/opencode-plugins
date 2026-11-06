@@ -1,4 +1,4 @@
-import { createSignal, ErrorBoundary } from "solid-js"
+import { createSignal, ErrorBoundary, untrack } from "solid-js"
 import { readFileSync, existsSync } from "node:fs"
 import { TextAttributes } from "@opentui/core"
 import type { TuiPlugin, TuiPluginModule } from "@opencode-ai/plugin/tui"
@@ -114,66 +114,54 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
 
   const idleActive = (slot: "a" | "b") => !thinking() && modes[slot]
 
+  const showA = () => active.a() || idleActive("a")
+
+  // Stable (created once) hint: only its text content is reactive.
+  function busyHint() {
+    return <text fg={refreshTheme()?.warning ?? FALLBACK_COLOR}>{active.a() ? SPINNER[spinnerIdx()] : ""}</text>
+  }
+
+  // Constant element structure: toggling busy/idle only changes props, so the
+  // wrapped prompt is never unmounted.
+  function wrapPrompt(prompt: any) {
+    return (
+      <ErrorBoundary fallback={<text>⚠</text>}>
+        <box>
+          <box flexDirection="row" justifyContent="flex-end" height={showA() ? undefined : 0} overflow="hidden">
+            <box borderStyle="heavy" borderColor={(refreshTheme(), colorForPhase())} paddingX={1}>
+              <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{SPINNER[spinnerIdx()]} {labelForPhase()}</text>
+            </box>
+          </box>
+          <box border={showA()} borderStyle="heavy" borderColor={colorForPhase()}>
+            {prompt}
+          </box>
+        </box>
+      </ErrorBoundary>
+    )
+  }
+
   api.slots.register({
     slots: {
-      // A: prompt border + WORKING/IDLE indicator
-      session_prompt: (ctx: any, props: any) => {
-        const t = refreshTheme()
-        const color = colorForPhase()
-        const label = labelForPhase()
-        const showBusy = active.a()
-        const showIdle = idleActive("a")
-        const promptHint = showBusy
-          ? <text fg={t?.warning ?? FALLBACK_COLOR}>{SPINNER[spinnerIdx()]}</text>
-          : undefined
+      // A: prompt border + WORKING/IDLE indicator.
+      // IMPORTANT: the slot function must NOT read signals at its top level.
+      // Slots are re-run when a tracked signal changes; the spinner/color
+      // signals tick every 120-250ms, which re-created api.ui.Prompt each time.
+      // That remounted the prompt, resetting its focus and the "esc again to
+      // interrupt" counter, so Esc never interrupted a running session.
+      // The prompt is built once (untracked) and only the wrapper is reactive.
+      session_prompt: (ctx: any, props: any) => untrack(() => {
         const prompt = api.ui.Prompt({
           sessionID: props.session_id, visible: props.visible,
           disabled: props.disabled, onSubmit: props.on_submit,
-          ref: props.ref, hint: promptHint,
+          ref: props.ref, hint: busyHint(),
         })
-        if (!showBusy && !showIdle) return prompt
-        return (
-          <ErrorBoundary fallback={<text>⚠</text>}>
-            <box>
-              <box flexDirection="row" justifyContent="flex-end">
-                <box borderStyle="heavy" borderColor={color} paddingX={1}>
-                  <text fg={color} attributes={TextAttributes.BOLD}>{SPINNER[spinnerIdx()]} {label}</text>
-                </box>
-              </box>
-              <box borderStyle="heavy" borderColor={color}>
-                {prompt}
-              </box>
-            </box>
-          </ErrorBoundary>
-        )
-      },
+        return wrapPrompt(prompt)
+      }),
 
-      home_prompt: (ctx: any, props: any) => {
-        const t = refreshTheme()
-        const color = colorForPhase()
-        const label = labelForPhase()
-        const showBusy = active.a()
-        const showIdle = idleActive("a")
-        const promptHint = showBusy
-          ? <text fg={t?.warning ?? FALLBACK_COLOR}>{SPINNER[spinnerIdx()]}</text>
-          : undefined
-        const prompt = api.ui.Prompt({ ref: props.ref, hint: promptHint })
-        if (!showBusy && !showIdle) return prompt
-        return (
-          <ErrorBoundary fallback={<text>⚠</text>}>
-            <box>
-              <box flexDirection="row" justifyContent="flex-end">
-                <box borderStyle="heavy" borderColor={color} paddingX={1}>
-                  <text fg={color} attributes={TextAttributes.BOLD}>{SPINNER[spinnerIdx()]} {label}</text>
-                </box>
-              </box>
-              <box borderStyle="heavy" borderColor={color}>
-                {prompt}
-              </box>
-            </box>
-          </ErrorBoundary>
-        )
-      },
+      home_prompt: (ctx: any, props: any) => untrack(() => {
+        const prompt = api.ui.Prompt({ ref: props.ref, hint: busyHint() })
+        return wrapPrompt(prompt)
+      }),
 
       // B: sidebar title border
       sidebar_title: (ctx: any, props: any) => {

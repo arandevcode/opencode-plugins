@@ -2,6 +2,7 @@
 
 ## 0.3.0 — 2026-11-06
 - OpenCode 2 support (early preview): the package now registers on both OpenCode 1.x and 2.x; tested on 2.1.2.
+- Fix: Esc did not interrupt a running session (issue #1). The prompt was re-created on every animation tick, resetting its focus and the "esc again to interrupt" state; it is now created once.
 
 ## 0.2.2 — 2026-08-06
 - Allow OpenTUI 0.5 peer dependencies.

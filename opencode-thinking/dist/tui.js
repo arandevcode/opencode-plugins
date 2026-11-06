@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "@opentui/solid/jsx-runtime";
-import { createSignal, ErrorBoundary } from "solid-js";
+import { createSignal, ErrorBoundary, untrack } from "solid-js";
 import { readFileSync, existsSync } from "node:fs";
 import { TextAttributes } from "@opentui/core";
 import { getStatePath } from "./types.js";
@@ -121,41 +121,37 @@ export const thinkingVisual = async (api, options) => {
         b: () => thinking() && modes.b,
     };
     const idleActive = (slot) => !thinking() && modes[slot];
+    const showA = () => active.a() || idleActive("a");
+    // Stable (created once) hint: only its text content is reactive.
+    function busyHint() {
+        return _jsx("text", { fg: refreshTheme()?.warning ?? FALLBACK_COLOR, children: active.a() ? SPINNER[spinnerIdx()] : "" });
+    }
+    // Constant element structure: toggling busy/idle only changes props, so the
+    // wrapped prompt is never unmounted.
+    function wrapPrompt(prompt) {
+        return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { children: [_jsx("box", { flexDirection: "row", justifyContent: "flex-end", height: showA() ? undefined : 0, overflow: "hidden", children: _jsx("box", { borderStyle: "heavy", borderColor: (refreshTheme(), colorForPhase()), paddingX: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [SPINNER[spinnerIdx()], " ", labelForPhase()] }) }) }), _jsx("box", { border: showA(), borderStyle: "heavy", borderColor: colorForPhase(), children: prompt })] }) }));
+    }
     api.slots.register({
         slots: {
-            // A: prompt border + WORKING/IDLE indicator
-            session_prompt: (ctx, props) => {
-                const t = refreshTheme();
-                const color = colorForPhase();
-                const label = labelForPhase();
-                const showBusy = active.a();
-                const showIdle = idleActive("a");
-                const promptHint = showBusy
-                    ? _jsx("text", { fg: t?.warning ?? FALLBACK_COLOR, children: SPINNER[spinnerIdx()] })
-                    : undefined;
+            // A: prompt border + WORKING/IDLE indicator.
+            // IMPORTANT: the slot function must NOT read signals at its top level.
+            // Slots are re-run when a tracked signal changes; the spinner/color
+            // signals tick every 120-250ms, which re-created api.ui.Prompt each time.
+            // That remounted the prompt, resetting its focus and the "esc again to
+            // interrupt" counter, so Esc never interrupted a running session.
+            // The prompt is built once (untracked) and only the wrapper is reactive.
+            session_prompt: (ctx, props) => untrack(() => {
                 const prompt = api.ui.Prompt({
                     sessionID: props.session_id, visible: props.visible,
                     disabled: props.disabled, onSubmit: props.on_submit,
-                    ref: props.ref, hint: promptHint,
+                    ref: props.ref, hint: busyHint(),
                 });
-                if (!showBusy && !showIdle)
-                    return prompt;
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { children: [_jsx("box", { flexDirection: "row", justifyContent: "flex-end", children: _jsx("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [SPINNER[spinnerIdx()], " ", label] }) }) }), _jsx("box", { borderStyle: "heavy", borderColor: color, children: prompt })] }) }));
-            },
-            home_prompt: (ctx, props) => {
-                const t = refreshTheme();
-                const color = colorForPhase();
-                const label = labelForPhase();
-                const showBusy = active.a();
-                const showIdle = idleActive("a");
-                const promptHint = showBusy
-                    ? _jsx("text", { fg: t?.warning ?? FALLBACK_COLOR, children: SPINNER[spinnerIdx()] })
-                    : undefined;
-                const prompt = api.ui.Prompt({ ref: props.ref, hint: promptHint });
-                if (!showBusy && !showIdle)
-                    return prompt;
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { children: [_jsx("box", { flexDirection: "row", justifyContent: "flex-end", children: _jsx("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [SPINNER[spinnerIdx()], " ", label] }) }) }), _jsx("box", { borderStyle: "heavy", borderColor: color, children: prompt })] }) }));
-            },
+                return wrapPrompt(prompt);
+            }),
+            home_prompt: (ctx, props) => untrack(() => {
+                const prompt = api.ui.Prompt({ ref: props.ref, hint: busyHint() });
+                return wrapPrompt(prompt);
+            }),
             // B: sidebar title border
             sidebar_title: (ctx, props) => {
                 if (!active.b() && !idleActive("b"))
