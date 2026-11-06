@@ -101,7 +101,7 @@ Restart OpenCode. **Note:** neither plugin ever touches `~/.local/share/opencode
 <p align="center">
   <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-thinking/images/demo.gif" alt="Thinking rainbow border demo" width="420">
   &nbsp;&nbsp;&nbsp;
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar.png" alt="Quota sidebar" width="420">
+  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Quota sidebar" width="420">
   <br>
   <sub><em>thinking demo</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>quota sidebar</em></sub>
 </p>

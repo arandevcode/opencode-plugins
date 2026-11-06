@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar.png" alt="Barra lateral TUI" width="420">
+  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Barra lateral TUI" width="420">
   <br>
   <sub><em>-sidebar example-</em></sub>
 </p>
@@ -55,11 +55,6 @@ opencode plugin add @arandevcode/opencode-quota-extended
 ```
 
 En OpenCode 2 el comando es `plugin add` (no `plugin --global`). El soporte para OpenCode 2 es nuevo; si ves algo raro, [abre un issue](https://github.com/arandevcode/opencode-plugins/issues).
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Barra lateral de cuota en OpenCode 2" width="360"><br>
-  <sub><em>Barra lateral en OpenCode 2 (datos de ejemplo)</em></sub>
-</p>
 
 ### Compatibilidad
 

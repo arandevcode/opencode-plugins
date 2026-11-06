@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar.png" alt="TUI sidebar" width="420">
+  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="TUI sidebar" width="420">
   <br>
   <sub><em>-sidebar example-</em></sub>
 </p>
@@ -56,11 +56,6 @@ opencode plugin add @arandevcode/opencode-quota-extended
 ```
 
 On OpenCode 2 the plugin command is `plugin add` (not `plugin --global`). Support for OpenCode 2 is new; please [open an issue](https://github.com/arandevcode/opencode-plugins/issues) if something looks wrong.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Quota sidebar on OpenCode 2" width="360"><br>
-  <sub><em>OpenCode 2 sidebar (sample data)</em></sub>
-</p>
 
 ### Compatibility
 
