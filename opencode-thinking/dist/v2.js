@@ -171,6 +171,8 @@ export function createThinkingV2Api(context, cleanups) {
 export function decorateSidebar(context, api, cleanups) {
     let decorated = null;
     let lastColor = "";
+    let baseWidth = 0;
+    let rootAdjusted = false;
     const findSidebar = () => {
         const root = context.renderer?.root;
         const w = context.renderer?.width ?? 0;
@@ -193,15 +195,32 @@ export function decorateSidebar(context, api, cleanups) {
         };
         return walk(root);
     };
-    const remove = () => {
-        if (!decorated)
+    const restoreRoot = () => {
+        if (!rootAdjusted)
             return;
+        rootAdjusted = false;
         try {
-            decorated.border = false;
+            const root = context.renderer?.root;
+            if (root) {
+                root.paddingRight = 0;
+                root.paddingBottom = 0;
+            }
         }
-        catch { /* host node is gone */ }
+        catch { /* host root is gone */ }
+    };
+    const remove = () => {
+        if (decorated) {
+            try {
+                decorated.border = false;
+                if (baseWidth)
+                    decorated.width = baseWidth;
+            }
+            catch { /* host node is gone */ }
+        }
+        restoreRoot();
         decorated = null;
         lastColor = "";
+        baseWidth = 0;
     };
     const apply = () => {
         let enabled = true;
@@ -221,11 +240,16 @@ export function decorateSidebar(context, api, cleanups) {
         if (decorated && decorated !== node) {
             try {
                 decorated.border = false;
+                if (baseWidth)
+                    decorated.width = baseWidth;
             }
             catch { /* old node is gone */ }
             lastColor = "";
+            baseWidth = 0;
         }
         decorated = node;
+        if (!baseWidth)
+            baseWidth = Number(node.width ?? 0) || 0;
         let color = lastColor || "#4cc46a";
         try {
             color = String(api?.__thinkingPhaseColor?.() ?? color);
@@ -241,15 +265,36 @@ export function decorateSidebar(context, api, cleanups) {
                 node.borderStyle = "heavy";
                 changed = true;
             }
-            // Keep the frame away from the terminal edges: the last column/row is
-            // often clipped, which cut the bottom-right corner of the border.
+            // The border consumes two columns from the host's sidebar, which was
+            // clipping the right side of the slot content (quota percentages, etc.).
+            // Widen the box by the same amount so the inner width is unchanged.
+            const targetWidth = baseWidth + 2;
+            if (targetWidth && node.width !== targetWidth) {
+                node.width = targetWidth;
+                changed = true;
+            }
             if (node.marginRight !== 2) {
                 node.marginRight = 2;
                 changed = true;
             }
-            if (node.marginBottom !== 1) {
-                node.marginBottom = 1;
+            if (node.marginBottom !== 0) {
+                node.marginBottom = 0;
                 changed = true;
+            }
+            // Move the whole app two columns/one row away from the terminal edge so
+            // the added border is not clipped by the last column/row.
+            const root = context.renderer?.root;
+            if (root) {
+                if (root.paddingRight !== 2) {
+                    root.paddingRight = 2;
+                    changed = true;
+                    rootAdjusted = true;
+                }
+                if (root.paddingBottom !== 1) {
+                    root.paddingBottom = 1;
+                    changed = true;
+                    rootAdjusted = true;
+                }
             }
             if (color !== lastColor) {
                 node.borderColor = color;
