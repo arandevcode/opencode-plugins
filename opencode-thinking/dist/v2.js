@@ -106,20 +106,18 @@ export function createThinkingV2Api(context, cleanups) {
     };
     const slots = {
         register(input) {
-            // OpenCode 2 has no composer wrapper. Show the indicator as a status
-            // strip below the prompt instead of the pill above it.
-            const status = input.slots.prompt_status;
-            if (status && context.ui?.slot) {
+            // OpenCode 2 has no composer wrapper. Draw a full-width bar with a
+            // colored top border above the composer instead of the small pill.
+            const bar = input.slots.prompt_bar;
+            if (bar && context.ui?.slot) {
                 cleanups.push(context.ui.slot({
-                    append: "prompt.footer.status",
+                    append: "session.composer.top",
                     render: (props) => {
                         const sessionID = props?.sessionID;
                         if (!sessionID)
                             return null;
                         syncFocus(sessionID);
-                        if (props?.mode === "shell")
-                            return null;
-                        return status({}, {});
+                        return bar({}, {});
                     },
                 }));
             }

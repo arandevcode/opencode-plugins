@@ -162,11 +162,12 @@ export const thinkingVisual = async (api, options) => {
                 const color = colorForPhase();
                 return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, children: _jsx("text", { fg: color, attributes: TextAttributes.BOLD, children: labelForPhase() }) }) }));
             },
-            // C: status strip below the composer (OpenCode 2 cannot wrap the prompt).
-            prompt_status: () => {
+            // C: full-width bar above the composer (OpenCode 2 cannot wrap the prompt).
+            prompt_bar: () => {
                 if (!showA())
                     return null;
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", justifyContent: "flex-end", paddingRight: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] }) }) }));
+                const color = colorForPhase();
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { flexDirection: "column", width: "100%", children: [_jsx("box", { height: 1, width: "100%", border: ["top"], borderStyle: "heavy", borderColor: color }), _jsx("box", { flexDirection: "row", justifyContent: "flex-start", paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] }) })] }) }));
             },
         },
     });

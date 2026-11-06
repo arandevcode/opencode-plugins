@@ -53,12 +53,12 @@ test("V2 TUI adapter maps slots and cleans up", async () => {
   assert.equal(api.theme.current.text, "#fff")
   api.slots.register({
     slots: {
-      prompt_status: () => "status",
+      prompt_bar: () => "bar",
       home_prompt: () => "home",
       sidebar_title: () => "side",
     },
   })
-  assert.deepEqual(slots.map((slot) => slot.append), ["prompt.footer.status", "home.footer.status", "sidebar.content"])
+  assert.deepEqual(slots.map((slot) => slot.append), ["session.composer.top", "home.footer.status", "sidebar.content"])
 
   const statuses = []
   api.event.on("session.status", (event) => statuses.push(event.properties.status.type))
@@ -90,7 +90,7 @@ test("V2 TUI adapter only reacts to the focused session", async () => {
   )
   api.slots.register({
     slots: {
-      prompt_status: () => "status",
+      prompt_bar: () => "bar",
       home_prompt: () => "home",
       sidebar_title: () => "side",
     },
@@ -103,8 +103,8 @@ test("V2 TUI adapter only reacts to the focused session", async () => {
 
   // Focusing a session syncs with its current status (idle here).
   route = { type: "session", sessionID: "ses_focus" }
-  const promptSlot = slots.find((slot) => slot.append === "prompt.footer.status")
-  promptSlot.render({ sessionID: "ses_focus", mode: "normal", showDetails: false })
+  const promptSlot = slots.find((slot) => slot.append === "session.composer.top")
+  promptSlot.render({ sessionID: "ses_focus" })
   await new Promise((resolve) => setTimeout(resolve, 0))
   assert.deepEqual(statuses, ["idle"])
 

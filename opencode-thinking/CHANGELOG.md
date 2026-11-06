@@ -6,7 +6,7 @@
 - Fix: no more stray empty bordered box above the prompt on OpenCode 2, where the prompt element is not available.
 - Fix: the spinner and color animation stayed frozen on OpenCode 2. The TUI entry was pre-compiled by tsc, which removes Solid's reactive JSX transform; it now ships as `dist/tui.tsx` and is compiled by the host runtime, so signals update live.
 - Fix: the indicator no longer reacts to other sessions or subagents running in the background; it follows only the focused session and syncs when you switch.
-- Change: on OpenCode 2 the indicator moved from above the composer to `prompt.footer.status` (a status strip below the prompt), since the prompt itself cannot be wrapped. The sidebar now shows `WORKING`/`IDLE` instead of the static "Thinking" title.
+- Change: on OpenCode 2 the indicator is now a full-width bar with a colored top border above the composer (`session.composer.top`), since the prompt itself cannot be wrapped. The sidebar shows `WORKING`/`IDLE` instead of the static "Thinking" title.
 
 ## 0.3.0 — 2026-11-06
 - OpenCode 2 support (early preview): the package now registers on both OpenCode 1.x and 2.x; tested on 2.1.2.

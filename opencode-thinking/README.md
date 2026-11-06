@@ -59,7 +59,7 @@ On OpenCode 2 the plugin command is `plugin add` (not `plugin --global`). Suppor
 
 | Feature | OpenCode 1.x | OpenCode 2 |
 |---|---|---|
-| WORKING / IDLE indicator | ✅ | ✅ below the message box (`prompt.footer.status`) |
+| WORKING / IDLE indicator | ✅ | ✅ full-width bar above the message box |
 | Rainbow border around the message box | ✅ | ❌ OpenCode 2 does not let plugins wrap the message box |
 | Sidebar glow | ✅ | ✅ |
 | `/thinking_visual` command | ✅ | ✅ |

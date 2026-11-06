@@ -179,13 +179,17 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
         )
       },
 
-      // C: status strip below the composer (OpenCode 2 cannot wrap the prompt).
-      prompt_status: () => {
+      // C: full-width bar above the composer (OpenCode 2 cannot wrap the prompt).
+      prompt_bar: () => {
         if (!showA()) return null
+        const color = colorForPhase()
         return (
           <ErrorBoundary fallback={<text>⚠</text>}>
-            <box flexDirection="row" justifyContent="flex-end" paddingRight={1}>
-              <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
+            <box flexDirection="column" width="100%">
+              <box height={1} width="100%" border={["top"]} borderStyle="heavy" borderColor={color} />
+              <box flexDirection="row" justifyContent="flex-start" paddingX={1}>
+                <text fg={color} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
+              </box>
             </box>
           </ErrorBoundary>
         )
