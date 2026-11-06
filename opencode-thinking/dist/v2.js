@@ -106,8 +106,8 @@ export function createThinkingV2Api(context, cleanups) {
     };
     const slots = {
         register(input) {
-            // OpenCode 2 has no composer wrapper. Draw a full-width bar with a
-            // colored top border above the composer instead of the small pill.
+            // OpenCode 2 has no composer wrapper. Draw a full-width bordered bar
+            // above the composer instead of the small pill.
             const bar = input.slots.prompt_bar;
             if (bar && context.ui?.slot) {
                 cleanups.push(context.ui.slot({
@@ -161,4 +161,97 @@ export function createThinkingV2Api(context, cleanups) {
         },
     };
     return { theme, event, ui, lifecycle, slots, keymap };
+}
+/**
+ * Draw a border around the whole sidebar. OpenCode 2 does not publish a
+ * sidebar-container slot, so this walks the host renderable tree and toggles
+ * the border on the sidebar box. It is reapplied periodically in case the
+ * host recreates the subtree (session switch, resize).
+ */
+export function decorateSidebar(context, api, cleanups) {
+    let decorated = null;
+    let lastColor = "";
+    const findSidebar = () => {
+        const root = context.renderer?.root;
+        const w = context.renderer?.width ?? 0;
+        const h = context.renderer?.height ?? 0;
+        if (!root || !w || !h)
+            return null;
+        const walk = (n) => {
+            if (!n)
+                return null;
+            const nw = Number(n.width ?? 0);
+            const nh = Number(n.height ?? 0);
+            if (nw > 8 && nw < w * 0.5 && nh > h * 0.5)
+                return n;
+            for (const child of n.getChildren?.() ?? []) {
+                const found = walk(child);
+                if (found)
+                    return found;
+            }
+            return null;
+        };
+        return walk(root);
+    };
+    const remove = () => {
+        if (!decorated)
+            return;
+        try {
+            decorated.border = false;
+        }
+        catch { /* host node is gone */ }
+        decorated = null;
+        lastColor = "";
+    };
+    const apply = () => {
+        let enabled = true;
+        try {
+            enabled = Boolean(api?.__thinkingSidebarEnabled?.() ?? true);
+        }
+        catch { /* default on */ }
+        if (!enabled) {
+            remove();
+            return;
+        }
+        const node = findSidebar();
+        if (!node) {
+            remove();
+            return;
+        }
+        if (decorated && decorated !== node) {
+            try {
+                decorated.border = false;
+            }
+            catch { /* old node is gone */ }
+            lastColor = "";
+        }
+        decorated = node;
+        let color = lastColor || "#4cc46a";
+        try {
+            color = String(api?.__thinkingPhaseColor?.() ?? color);
+        }
+        catch { /* keep last color */ }
+        let changed = false;
+        try {
+            if (node.border !== true) {
+                node.border = true;
+                changed = true;
+            }
+            if (node.borderStyle !== "heavy") {
+                node.borderStyle = "heavy";
+                changed = true;
+            }
+            if (color !== lastColor) {
+                node.borderColor = color;
+                lastColor = color;
+                changed = true;
+            }
+        }
+        catch { /* host node layout changed */ }
+        if (changed)
+            context.renderer?.requestRender?.();
+    };
+    apply();
+    const timer = setInterval(apply, 500);
+    cleanups.push(() => { clearInterval(timer); remove(); });
 }

@@ -28,6 +28,12 @@ export type V2ThinkingContext = {
             } | undefined;
         };
     };
+    renderer?: {
+        root?: any;
+        width?: number;
+        height?: number;
+        requestRender?: () => void;
+    };
     ui?: {
         slot?: (input: {
             append?: string;
@@ -54,3 +60,10 @@ export type V2ThinkingContext = {
 export declare function v2Color(value: unknown, fallback: string): string;
 /** Bridge V2's context to the V1 TUI API used by `thinkingVisual`. */
 export declare function createThinkingV2Api(context: V2ThinkingContext, cleanups: Array<() => void>): any;
+/**
+ * Draw a border around the whole sidebar. OpenCode 2 does not publish a
+ * sidebar-container slot, so this walks the host renderable tree and toggles
+ * the border on the sidebar box. It is reapplied periodically in case the
+ * host recreates the subtree (session switch, resize).
+ */
+export declare function decorateSidebar(context: V2ThinkingContext, api: any, cleanups: Array<() => void>): void;

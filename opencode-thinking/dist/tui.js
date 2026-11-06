@@ -4,7 +4,7 @@ import { createSignal, ErrorBoundary, untrack } from "solid-js";
 import { readFileSync, existsSync } from "node:fs";
 import { TextAttributes } from "@opentui/core";
 import { getStatePath } from "./types.js";
-import { createThinkingV2Api } from "./v2.js";
+import { createThinkingV2Api, decorateSidebar } from "./v2.js";
 const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 const COLOR_CYCLE_MS = 250;
 const SPINNER_TICK_MS = 120;
@@ -190,6 +190,8 @@ export const thinkingVisual = async (api, options) => {
             api.ui.toast({ title: "Sidebar", message: modes.b ? "on" : "off", variant: "info" });
         }
     });
+    api.__thinkingSidebarEnabled = () => modes.b;
+    api.__thinkingPhaseColor = () => colorForPhase();
     api.lifecycle.onDispose(() => {
         stop();
         clearInterval(themeTimer);
@@ -198,7 +200,9 @@ export const thinkingVisual = async (api, options) => {
 };
 export async function thinkingVisualV2(context) {
     const cleanups = [];
-    await thinkingVisual(createThinkingV2Api(context, cleanups), context.options ?? {}, {});
+    const api = createThinkingV2Api(context, cleanups);
+    await thinkingVisual(api, context.options ?? {}, {});
+    decorateSidebar(context, api, cleanups);
     return () => {
         for (const cleanup of cleanups.reverse()) {
             try {

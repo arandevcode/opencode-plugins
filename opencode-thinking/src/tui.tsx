@@ -5,7 +5,7 @@ import { TextAttributes } from "@opentui/core"
 import type { TuiPlugin, TuiPluginModule } from "@opencode-ai/plugin/tui"
 import type { ThinkingVisualState } from "./types.js"
 import { getStatePath } from "./types.js"
-import { createThinkingV2Api, type V2ThinkingContext } from "./v2.js"
+import { createThinkingV2Api, decorateSidebar, type V2ThinkingContext } from "./v2.js"
 
 const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 const COLOR_CYCLE_MS = 250
@@ -218,6 +218,9 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
     if (id === "opencode-thinking.toggle-b") { modes.b = !modes.b; api.ui.toast({ title: "Sidebar", message: modes.b ? "on" : "off", variant: "info" }) }
   })
 
+  ;(api as any).__thinkingSidebarEnabled = () => modes.b
+  ;(api as any).__thinkingPhaseColor = () => colorForPhase()
+
   api.lifecycle.onDispose(() => {
     stop()
     clearInterval(themeTimer)
@@ -227,7 +230,9 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
 
 export async function thinkingVisualV2(context: V2ThinkingContext): Promise<() => void> {
   const cleanups: Array<() => void> = [];
-  await thinkingVisual(createThinkingV2Api(context, cleanups), context.options ?? {}, {} as any);
+  const api = createThinkingV2Api(context, cleanups);
+  await thinkingVisual(api, context.options ?? {}, {} as any);
+  decorateSidebar(context, api, cleanups);
   return () => {
     for (const cleanup of cleanups.reverse()) {
       try { cleanup(); } catch {}
