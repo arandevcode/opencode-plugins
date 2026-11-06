@@ -256,9 +256,10 @@ export function decorateSidebar(context: V2ThinkingContext, api: any, cleanups: 
     try {
       if (node.border !== true) { node.border = true; changed = true; }
       if (node.borderStyle !== "heavy") { node.borderStyle = "heavy"; changed = true; }
-      // Leave one column free on the right: terminals clip the last column,
-      // which was cutting the right side of the frame.
-      if (node.marginRight !== 1) { node.marginRight = 1; changed = true; }
+      // Keep the frame away from the terminal edges: the last column/row is
+      // often clipped, which cut the bottom-right corner of the border.
+      if (node.marginRight !== 2) { node.marginRight = 2; changed = true; }
+      if (node.marginBottom !== 1) { node.marginBottom = 1; changed = true; }
       if (color !== lastColor) { node.borderColor = color; lastColor = color; changed = true; }
     } catch { /* host node layout changed */ }
 
