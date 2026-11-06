@@ -1,6 +1,6 @@
 {
   "name": "@arandevcode/opencode-thinking",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Theme-aware visual thinking indicators for opencode — rainbow border (warning/error), IDLE state in success color, and construction sidebar",
   "type": "module",
   "main": "dist/index.js",
