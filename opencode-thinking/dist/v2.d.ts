@@ -23,6 +23,9 @@ export type V2ThinkingContext = {
         listen?: (handler: (event: any) => void) => () => void;
         session?: {
             status?: (sessionID: string) => "idle" | "running";
+            get?: (sessionID: string) => {
+                title?: string;
+            } | undefined;
         };
     };
     ui?: {

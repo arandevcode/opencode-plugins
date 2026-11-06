@@ -172,24 +172,31 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
         const color = colorForPhase()
         return (
           <ErrorBoundary fallback={<text>⚠</text>}>
-            <box borderStyle="heavy" borderColor={color} paddingX={1}>
-              <text fg={color} attributes={TextAttributes.BOLD}>{labelForPhase()}</text>
+            <box borderStyle="heavy" borderColor={color} paddingX={1} flexDirection="column">
+              {props.title ? <text fg={color} attributes={TextAttributes.BOLD}>{props.title}</text> : null}
+              <text fg={color} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
             </box>
           </ErrorBoundary>
         )
       },
 
-      // C: full-width bar above the composer (OpenCode 2 cannot wrap the prompt).
+      // C: full-width bordered bar above the composer (OpenCode 2 cannot
+      // wrap the prompt, so this is the closest border-like indicator).
       prompt_bar: () => {
         if (!showA()) return null
         const color = colorForPhase()
         return (
           <ErrorBoundary fallback={<text>⚠</text>}>
-            <box flexDirection="column" width="100%">
-              <box height={1} width="100%" border={["top"]} borderStyle="heavy" borderColor={color} />
-              <box flexDirection="row" justifyContent="flex-start" paddingX={1}>
-                <text fg={color} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
-              </box>
+            <box
+              flexDirection="row"
+              justifyContent="flex-start"
+              width="100%"
+              border
+              borderStyle="heavy"
+              borderColor={color}
+              paddingX={1}
+            >
+              <text fg={color} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
             </box>
           </ErrorBoundary>
         )

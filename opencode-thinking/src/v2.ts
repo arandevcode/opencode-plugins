@@ -13,7 +13,10 @@ export type V2ThinkingContext = {
   options?: Record<string, unknown>;
   data?: {
     listen?: (handler: (event: any) => void) => () => void;
-    session?: { status?: (sessionID: string) => "idle" | "running" };
+    session?: {
+      status?: (sessionID: string) => "idle" | "running";
+      get?: (sessionID: string) => { title?: string } | undefined;
+    };
   };
   ui?: {
     slot?: (input: { append?: string; render: (props?: any) => unknown }) => () => void;
@@ -158,7 +161,15 @@ export function createThinkingV2Api(context: V2ThinkingContext, cleanups: Array<
       if (sidebar && context.ui?.slot) {
         cleanups.push(context.ui.slot({
           append: "sidebar.content",
-          render: (props) => { syncFocus(props?.sessionID); return sidebar({}, {}); },
+          render: (props) => {
+            const sessionID = props?.sessionID;
+            syncFocus(sessionID);
+            let title = "";
+            try {
+              title = String(context.data?.session?.get?.(sessionID)?.title ?? "");
+            } catch { /* session lookup failed */ }
+            return sidebar({}, { title: title.slice(0, 40) });
+          },
         }));
       }
     },

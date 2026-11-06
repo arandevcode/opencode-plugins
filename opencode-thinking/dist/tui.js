@@ -160,14 +160,15 @@ export const thinkingVisual = async (api, options) => {
                 if (!active.b() && !idleActive("b"))
                     return null;
                 const color = colorForPhase();
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, children: _jsx("text", { fg: color, attributes: TextAttributes.BOLD, children: labelForPhase() }) }) }));
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, flexDirection: "column", children: [props.title ? _jsx("text", { fg: color, attributes: TextAttributes.BOLD, children: props.title }) : null, _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] })] }) }));
             },
-            // C: full-width bar above the composer (OpenCode 2 cannot wrap the prompt).
+            // C: full-width bordered bar above the composer (OpenCode 2 cannot
+            // wrap the prompt, so this is the closest border-like indicator).
             prompt_bar: () => {
                 if (!showA())
                     return null;
                 const color = colorForPhase();
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { flexDirection: "column", width: "100%", children: [_jsx("box", { height: 1, width: "100%", border: ["top"], borderStyle: "heavy", borderColor: color }), _jsx("box", { flexDirection: "row", justifyContent: "flex-start", paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] }) })] }) }));
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", justifyContent: "flex-start", width: "100%", border: true, borderStyle: "heavy", borderColor: color, paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] }) }) }));
             },
         },
     });

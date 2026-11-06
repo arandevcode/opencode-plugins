@@ -132,7 +132,16 @@ export function createThinkingV2Api(context, cleanups) {
             if (sidebar && context.ui?.slot) {
                 cleanups.push(context.ui.slot({
                     append: "sidebar.content",
-                    render: (props) => { syncFocus(props?.sessionID); return sidebar({}, {}); },
+                    render: (props) => {
+                        const sessionID = props?.sessionID;
+                        syncFocus(sessionID);
+                        let title = "";
+                        try {
+                            title = String(context.data?.session?.get?.(sessionID)?.title ?? "");
+                        }
+                        catch { /* session lookup failed */ }
+                        return sidebar({}, { title: title.slice(0, 40) });
+                    },
                 }));
             }
         },
