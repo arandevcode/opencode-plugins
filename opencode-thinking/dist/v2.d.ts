@@ -21,6 +21,9 @@ export type V2ThinkingContext = {
     options?: Record<string, unknown>;
     data?: {
         listen?: (handler: (event: any) => void) => () => void;
+        session?: {
+            status?: (sessionID: string) => "idle" | "running";
+        };
     };
     ui?: {
         slot?: (input: {
@@ -33,6 +36,12 @@ export type V2ThinkingContext = {
                 message: string;
                 variant?: string;
             }) => void;
+        };
+        router?: {
+            current?: () => {
+                type?: string;
+                sessionID?: string;
+            };
         };
     };
     keymap?: {

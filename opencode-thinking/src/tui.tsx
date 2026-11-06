@@ -173,7 +173,19 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
         return (
           <ErrorBoundary fallback={<text>⚠</text>}>
             <box borderStyle="heavy" borderColor={color} paddingX={1}>
-              <text>{props.title}</text>
+              <text fg={color} attributes={TextAttributes.BOLD}>{labelForPhase()}</text>
+            </box>
+          </ErrorBoundary>
+        )
+      },
+
+      // C: status strip below the composer (OpenCode 2 cannot wrap the prompt).
+      prompt_status: () => {
+        if (!showA()) return null
+        return (
+          <ErrorBoundary fallback={<text>⚠</text>}>
+            <box flexDirection="row" justifyContent="flex-end" paddingRight={1}>
+              <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{SPINNER[spinnerIdx()]} {labelForPhase()}</text>
             </box>
           </ErrorBoundary>
         )

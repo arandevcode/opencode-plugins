@@ -160,7 +160,13 @@ export const thinkingVisual = async (api, options) => {
                 if (!active.b() && !idleActive("b"))
                     return null;
                 const color = colorForPhase();
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, children: _jsx("text", { children: props.title }) }) }));
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, children: _jsx("text", { fg: color, attributes: TextAttributes.BOLD, children: labelForPhase() }) }) }));
+            },
+            // C: status strip below the composer (OpenCode 2 cannot wrap the prompt).
+            prompt_status: () => {
+                if (!showA())
+                    return null;
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", justifyContent: "flex-end", paddingRight: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [SPINNER[spinnerIdx()], " ", labelForPhase()] }) }) }));
             },
         },
     });

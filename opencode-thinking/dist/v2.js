@@ -25,7 +25,29 @@ export function createThinkingV2Api(context, cleanups) {
     const theme = { current: v2Theme(context.theme) };
     Object.defineProperty(theme, "current", { get: () => v2Theme(context.theme) });
     const handlers = new Map();
+    const focusedSession = () => {
+        try {
+            const route = context.ui?.router?.current?.();
+            return route?.type === "session" ? route.sessionID : undefined;
+        }
+        catch {
+            return undefined;
+        }
+    };
+    const routeAvailable = typeof context.ui?.router?.current === "function";
     const emit = (type, event) => {
+        if (type.startsWith("session.execution.")) {
+            const sessionID = event?.data?.sessionID;
+            if (routeAvailable) {
+                const focused = focusedSession();
+                // Only the focused session drives the indicator; subagents and other
+                // sessions running in the background must not turn it on or off.
+                if (!focused)
+                    return;
+                if (sessionID && sessionID !== focused)
+                    return;
+            }
+        }
         handlers.get(type)?.(event);
         if (type === "session.execution.started")
             handlers.get("session.status")?.({ properties: { status: { type: "busy" } } });
@@ -61,19 +83,59 @@ export function createThinkingV2Api(context, cleanups) {
         dialog: {},
     };
     const lifecycle = { onDispose(fn) { cleanups.push(fn); } };
+    let lastFocus;
+    const syncFocus = (sessionID) => {
+        if (!sessionID || sessionID === lastFocus)
+            return;
+        lastFocus = sessionID;
+        // Querying the status lets a session that is already running light up
+        // immediately when you switch to it.
+        queueMicrotask(() => {
+            const status = context.data?.session?.status?.(sessionID);
+            if (status === "running")
+                handlers.get("session.status")?.({ properties: { status: { type: "busy" } } });
+            else if (status === "idle")
+                handlers.get("session.status")?.({ properties: { status: { type: "idle" } } });
+        });
+    };
+    const resetFocus = () => {
+        if (lastFocus === undefined)
+            return;
+        lastFocus = undefined;
+        queueMicrotask(() => handlers.get("session.status")?.({ properties: { status: { type: "idle" } } }));
+    };
     const slots = {
         register(input) {
-            const prompt = input.slots.session_prompt;
-            if (prompt && context.ui?.slot) {
-                cleanups.push(context.ui.slot({ append: "session.composer.top", render: (props) => prompt({}, { session_id: props?.sessionID, title: "" }) }));
+            // OpenCode 2 has no composer wrapper. Show the indicator as a status
+            // strip below the prompt instead of the pill above it.
+            const status = input.slots.prompt_status;
+            if (status && context.ui?.slot) {
+                cleanups.push(context.ui.slot({
+                    append: "prompt.footer.status",
+                    render: (props) => {
+                        const sessionID = props?.sessionID;
+                        if (!sessionID)
+                            return null;
+                        syncFocus(sessionID);
+                        if (props?.mode === "shell")
+                            return null;
+                        return status({}, {});
+                    },
+                }));
             }
             const home = input.slots.home_prompt;
             if (home && context.ui?.slot) {
-                cleanups.push(context.ui.slot({ append: "home.footer.status", render: () => home({}, {}) }));
+                cleanups.push(context.ui.slot({
+                    append: "home.footer.status",
+                    render: () => { resetFocus(); return home({}, {}); },
+                }));
             }
             const sidebar = input.slots.sidebar_title;
             if (sidebar && context.ui?.slot) {
-                cleanups.push(context.ui.slot({ append: "sidebar.content", render: () => sidebar({}, { title: "Thinking" }) }));
+                cleanups.push(context.ui.slot({
+                    append: "sidebar.content",
+                    render: (props) => { syncFocus(props?.sessionID); return sidebar({}, {}); },
+                }));
             }
         },
     };

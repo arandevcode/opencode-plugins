@@ -59,7 +59,7 @@ On OpenCode 2 the plugin command is `plugin add` (not `plugin --global`). Suppor
 
 | Feature | OpenCode 1.x | OpenCode 2 |
 |---|---|---|
-| WORKING / IDLE indicator | ✅ | ✅ above the message box |
+| WORKING / IDLE indicator | ✅ | ✅ below the message box (`prompt.footer.status`) |
 | Rainbow border around the message box | ✅ | ❌ OpenCode 2 does not let plugins wrap the message box |
 | Sidebar glow | ✅ | ✅ |
 | `/thinking_visual` command | ✅ | ✅ |
@@ -165,7 +165,7 @@ Colors are sourced live from `api.theme.current`, not hardcoded. The plugin also
 | **Working** (model is `busy`) | alternates `theme.warning` ↔ `theme.error` every 250ms | `WORKING` |
 | **Idle** (model is `idle` / `session.idle`) | `theme.success` | `IDLE` |
 
-The same color drives the sidebar title border while the visual mode `b` is enabled.
+The same color drives the sidebar border while the visual mode `b` is enabled; the sidebar text shows the current `WORKING`/`IDLE` state.
 
 This pattern follows the `opentui-theme-colors` convention: semantic theme keys (`success` / `warning` / `error`) instead of hardcoded palette values, and `themeSignature()` + `setInterval` polling for reactive theme changes.
 
