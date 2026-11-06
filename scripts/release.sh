@@ -34,9 +34,27 @@ npm run build
 npm test
 
 echo "==> Leak scan"
-if git -C "$ROOT" ls-files -co --exclude-standard "$PLUGIN" | grep -v package-lock.json \
-  | xargs grep -nIE '/home/|/Users/|sk-[A-Za-z0-9]{16}|ghp_[A-Za-z0-9]{20}|BEGIN (RSA|OPENSSH)' 2>/dev/null; then
+# Scan every publishable file (tracked + untracked, minus .gitignore) for paths
+# and credentials. package-lock.json is included on purpose: the patterns are
+# specific, so registry maintainer addresses don't trigger false positives.
+#
+# Private project names must NOT live in this public repo. Put one regex per
+# line in an untracked file (default: ~/.config/opencode/leak-patterns.txt) or
+# pass EXTRA_LEAK_PATTERN. That way the deny-list itself is never published.
+EXTRA_LEAK_PATTERN="${EXTRA_LEAK_PATTERN:-}"
+LOCAL_PATTERN_FILE="${LEAK_PATTERN_FILE:-$HOME/.config/opencode/leak-patterns.txt}"
+if [ -z "$EXTRA_LEAK_PATTERN" ] && [ -r "$LOCAL_PATTERN_FILE" ]; then
+  EXTRA_LEAK_PATTERN="$(tr '\n' '|' < "$LOCAL_PATTERN_FILE" | sed -e 's/|$//' -e 's/||*/|/g')"
+fi
+LEAK_PATTERN='/home/|/Users/|C:\\\\Users|sk-[A-Za-z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20}|github_pat_|npm_[A-Za-z0-9]{36}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{30}|xox[baprs]-|-----BEGIN [A-Z ]*PRIVATE KEY'
+if [ -n "$EXTRA_LEAK_PATTERN" ]; then LEAK_PATTERN="$LEAK_PATTERN|$EXTRA_LEAK_PATTERN"; fi
+if git -C "$ROOT" ls-files -co --exclude-standard "$PLUGIN" \
+  | xargs grep -nIiE "$LEAK_PATTERN" 2>/dev/null; then
   echo "Error: possible private data above; aborting (version bump left uncommitted)"; exit 1
+fi
+SUSPICIOUS_FILES="$(git -C "$ROOT" ls-files -co --exclude-standard "$PLUGIN" | grep -iE '(^|/)\.env|secret|credential|\.pem$|\.p12$|\.pfx$|\.key$|auth\.json$' || true)"
+if [ -n "$SUSPICIOUS_FILES" ]; then
+  echo "Error: suspicious files would be published:"; echo "$SUSPICIOUS_FILES"; exit 1
 fi
 
 echo "==> Pack preview"
