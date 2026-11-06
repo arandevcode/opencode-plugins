@@ -131,16 +131,11 @@ export function createThinkingV2Api(context, cleanups) {
             const sidebar = input.slots.sidebar_title;
             if (sidebar && context.ui?.slot) {
                 cleanups.push(context.ui.slot({
-                    append: "sidebar.content",
+                    before: "sidebar.footer",
                     render: (props) => {
                         const sessionID = props?.sessionID;
                         syncFocus(sessionID);
-                        let title = "";
-                        try {
-                            title = String(context.data?.session?.get?.(sessionID)?.title ?? "");
-                        }
-                        catch { /* session lookup failed */ }
-                        return sidebar({}, { title: title.slice(0, 40) });
+                        return sidebar({}, {});
                     },
                 }));
             }

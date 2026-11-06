@@ -58,7 +58,7 @@ test("V2 TUI adapter maps slots and cleans up", async () => {
       sidebar_title: () => "side",
     },
   })
-  assert.deepEqual(slots.map((slot) => slot.append), ["session.composer.top", "home.footer.status", "sidebar.content"])
+  assert.deepEqual(slots.map((slot) => slot.append ?? slot.before), ["session.composer.top", "home.footer.status", "sidebar.footer"])
 
   const statuses = []
   api.event.on("session.status", (event) => statuses.push(event.properties.status.type))
@@ -118,7 +118,7 @@ test("V2 TUI adapter only reacts to the focused session", async () => {
 
   // Switching to an already-running session lights it up immediately.
   route = { type: "session", sessionID: "ses_running" }
-  const sidebarSlot = slots.find((slot) => slot.append === "sidebar.content")
+  const sidebarSlot = slots.find((slot) => (slot.append ?? slot.before) === "sidebar.footer")
   sidebarSlot.render({ sessionID: "ses_running" })
   await new Promise((resolve) => setTimeout(resolve, 0))
   assert.equal(statuses.at(-1), "busy")

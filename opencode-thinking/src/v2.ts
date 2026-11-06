@@ -15,7 +15,6 @@ export type V2ThinkingContext = {
     listen?: (handler: (event: any) => void) => () => void;
     session?: {
       status?: (sessionID: string) => "idle" | "running";
-      get?: (sessionID: string) => { title?: string } | undefined;
     };
   };
   renderer?: {
@@ -25,7 +24,7 @@ export type V2ThinkingContext = {
     requestRender?: () => void;
   };
   ui?: {
-    slot?: (input: { append?: string; render: (props?: any) => unknown }) => () => void;
+    slot?: (input: { append?: string; prepend?: string; before?: string; after?: string; replace?: string; render: (props?: any) => unknown }) => () => void;
     toast?: { show?: (input: { title?: string; message: string; variant?: string }) => void };
     router?: { current?: () => { type?: string; sessionID?: string } };
   };
@@ -166,15 +165,11 @@ export function createThinkingV2Api(context: V2ThinkingContext, cleanups: Array<
       const sidebar = input.slots.sidebar_title;
       if (sidebar && context.ui?.slot) {
         cleanups.push(context.ui.slot({
-          append: "sidebar.content",
+          before: "sidebar.footer",
           render: (props) => {
             const sessionID = props?.sessionID;
             syncFocus(sessionID);
-            let title = "";
-            try {
-              title = String(context.data?.session?.get?.(sessionID)?.title ?? "");
-            } catch { /* session lookup failed */ }
-            return sidebar({}, { title: title.slice(0, 40) });
+            return sidebar({}, {});
           },
         }));
       }

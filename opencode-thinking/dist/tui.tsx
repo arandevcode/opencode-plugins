@@ -166,14 +166,14 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
         return wrapPrompt(prompt)
       }),
 
-      // B: sidebar title border
-      sidebar_title: (ctx: any, props: any) => {
+      // B: sidebar state. On V2 this is appended to sidebar.footer, so it sits
+      // at the bottom of the sidebar just above the cwd:branch line.
+      sidebar_title: () => {
         if (!active.b() && !idleActive("b")) return null
         const color = colorForPhase()
         return (
           <ErrorBoundary fallback={<text>⚠</text>}>
-            <box borderStyle="heavy" borderColor={color} paddingX={1} flexDirection="column">
-              {props.title ? <text fg={color} attributes={TextAttributes.BOLD}>{props.title}</text> : null}
+            <box flexDirection="row" width="100%" paddingX={1}>
               <text fg={color} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
             </box>
           </ErrorBoundary>

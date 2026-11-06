@@ -23,9 +23,6 @@ export type V2ThinkingContext = {
         listen?: (handler: (event: any) => void) => () => void;
         session?: {
             status?: (sessionID: string) => "idle" | "running";
-            get?: (sessionID: string) => {
-                title?: string;
-            } | undefined;
         };
     };
     renderer?: {
@@ -37,6 +34,10 @@ export type V2ThinkingContext = {
     ui?: {
         slot?: (input: {
             append?: string;
+            prepend?: string;
+            before?: string;
+            after?: string;
+            replace?: string;
             render: (props?: any) => unknown;
         }) => () => void;
         toast?: {

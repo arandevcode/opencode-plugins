@@ -155,12 +155,13 @@ export const thinkingVisual = async (api, options) => {
                 const prompt = api.ui.Prompt({ ref: props.ref, hint: busyHint() });
                 return wrapPrompt(prompt);
             }),
-            // B: sidebar title border
-            sidebar_title: (ctx, props) => {
+            // B: sidebar state. On V2 this is appended to sidebar.footer, so it sits
+            // at the bottom of the sidebar just above the cwd:branch line.
+            sidebar_title: () => {
                 if (!active.b() && !idleActive("b"))
                     return null;
                 const color = colorForPhase();
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { borderStyle: "heavy", borderColor: color, paddingX: 1, flexDirection: "column", children: [props.title ? _jsx("text", { fg: color, attributes: TextAttributes.BOLD, children: props.title }) : null, _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] })] }) }));
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", width: "100%", paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] }) }) }));
             },
             // C: full-width bordered bar above the composer (OpenCode 2 cannot
             // wrap the prompt, so this is the closest border-like indicator).
