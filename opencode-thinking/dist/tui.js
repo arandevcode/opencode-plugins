@@ -1,4 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "@opentui/solid/jsx-runtime";
+/** @jsxImportSource @opentui/solid */
 import { createSignal, ErrorBoundary, untrack } from "solid-js";
 import { readFileSync, existsSync } from "node:fs";
 import { TextAttributes } from "@opentui/core";

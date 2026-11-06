@@ -4,6 +4,7 @@
 - Fix: on OpenCode 2 the WORKING/IDLE indicator stayed on IDLE while the model was running. The TUI event listener receives `{ details }` and the adapter read `event.type` from the wrapper, so `session.execution.started` never matched. The adapter now unwraps the envelope (and still accepts unwrapped events).
 - Fix: treat `session.execution.interrupted` as idle, alongside `succeeded` and `failed`.
 - Fix: no more stray empty bordered box above the prompt on OpenCode 2, where the prompt element is not available.
+- Fix: the spinner and color animation stayed frozen on OpenCode 2. The TUI entry was pre-compiled by tsc, which removes Solid's reactive JSX transform; it now ships as `dist/tui.tsx` and is compiled by the host runtime, so signals update live.
 
 ## 0.3.0 — 2026-11-06
 - OpenCode 2 support (early preview): the package now registers on both OpenCode 1.x and 2.x; tested on 2.1.2.
