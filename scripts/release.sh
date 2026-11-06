@@ -43,7 +43,11 @@ echo "==> Pack preview"
 npm pack --dry-run 2>&1 | tail -n 8
 
 echo "==> Publish"
-npm publish --access public
+OTP="${NPM_OTP:-}"
+if [ -z "$OTP" ] && [ -r /dev/tty ]; then
+  read -rp "npm OTP (empty if not needed): " OTP < /dev/tty
+fi
+npm publish --access public ${OTP:+--otp="$OTP"}
 
 cd "$ROOT"
 git add "$PLUGIN"
