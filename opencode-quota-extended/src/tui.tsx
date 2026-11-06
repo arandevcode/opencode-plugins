@@ -5,6 +5,7 @@ import { loadCardsConfig } from "./config/loader.js";
 import { createRefreshScheduler } from "./lib/refresh-scheduler.js";
 import { collectSnapshot } from "./providers/registry.js";
 import { SidebarPanel } from "./ui/SidebarPanel.js";
+import { createQuotaV2Api, type V2Context } from "./v2.js";
 
 const REFRESH_INTERVAL_MS = 60_000;
 const MOUNT_RECOVERY_DELAY_MS = 1_500;
@@ -95,9 +96,21 @@ export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
   }
 };
 
-const pluginModule: TuiPluginModule & { id: string } = {
+export async function quotaCardsTuiV2(context: V2Context): Promise<() => void> {
+  const cleanups: Array<() => void> = [];
+  const api = createQuotaV2Api(context, cleanups);
+  await quotaCardsTuiPlugin(api, context.options ?? {}, {} as any);
+  return () => {
+    for (const cleanup of cleanups.reverse()) {
+      try { cleanup(); } catch {}
+    }
+  };
+}
+
+const pluginModule: TuiPluginModule & { id: string; setup?: (context: V2Context) => Promise<() => void> } = {
   id: "@local/opencode-quota-extended",
   tui: quotaCardsTuiPlugin,
+  setup: quotaCardsTuiV2,
 };
 
 export default pluginModule;

@@ -1,0 +1,6 @@
+{
+  "plugin": [
+    "opencode-thinking/tui",
+    "opencode-thinking/server"
+  ]
+}

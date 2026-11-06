@@ -1,0 +1,14 @@
+{
+  "_comment": "Sidecar configuration for the opencode-quota-extended plugin. Drop this file at ~/.config/opencode/opencode-quota-extended.json (or point $OPENCODE_QUOTA_EXTENDED_CONFIG at a custom path) to override the built-in defaults. Any field can be omitted to fall back to its default. Keys starting with '_' (like this _comment) are documentation and are ignored by the loader. Fields:\n  enabled (boolean): master switch for the plugin.\n  enabledProviders (string[]): provider ids to fetch; at least one required. Allowed: 'openai', 'github-copilot', 'opencode-go'.\n  refreshIntervalMs (number, int > 0): how often to re-fetch quota data, in ms.\n  requestTimeoutMs (number, int > 0): HTTP timeout for the OpenAI / Copilot fetchers, in ms.\n  opencodeGoTimeoutMs (number, int > 0): HTTP timeout for the OpenCode Go scraper, in ms.\n  showOnlyMultiWindow (boolean): when true, providers with a single window render as a compact line instead of a card.\n  cardsSidebar (object): sidebar panel settings.\n    enabled (boolean): render the sidebar panel.\n    order (number, 0..100000): render order in the sidebar; values < 150 sit below the official Quota panel.\n  opencodeGoWindows (string[]): OpenCode Go windows to display. Allowed: '5h' (rolling 5h), 'weekly', 'monthly'; at least one required.",
+  "enabled": true,
+  "enabledProviders": ["openai", "github-copilot", "opencode-go"],
+  "refreshIntervalMs": 60000,
+  "requestTimeoutMs": 8000,
+  "opencodeGoTimeoutMs": 10000,
+  "showOnlyMultiWindow": false,
+  "cardsSidebar": {
+    "enabled": true,
+    "order": 145
+  },
+  "opencodeGoWindows": ["5h", "weekly", "monthly"]
+}

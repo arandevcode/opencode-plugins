@@ -6,14 +6,7 @@
  *
  * @packageDocumentation
  */
-import type { Plugin, PluginInput, Hooks, PluginModule } from "@opencode-ai/plugin";
+import plugin from "./server.js";
 
-import { quotaCardsServerPlugin } from "./server.js";
-
-const pluginModule: PluginModule = {
-  id: "@local/opencode-quota-extended",
-  server: quotaCardsServerPlugin as Plugin,
-};
-
-export default pluginModule;
-export { quotaCardsServerPlugin };
+export { quotaCardsServerPlugin } from "./server.js";
+export default plugin;

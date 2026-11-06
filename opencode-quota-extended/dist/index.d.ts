@@ -6,9 +6,7 @@
  *
  * @packageDocumentation
  */
-import type { PluginModule } from "@opencode-ai/plugin";
-import { quotaCardsServerPlugin } from "./server.js";
-declare const pluginModule: PluginModule;
-export default pluginModule;
-export { quotaCardsServerPlugin };
+import plugin from "./server.js";
+export { quotaCardsServerPlugin } from "./server.js";
+export default plugin;
 //# sourceMappingURL=index.d.ts.map

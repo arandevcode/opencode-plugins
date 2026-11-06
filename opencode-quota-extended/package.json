@@ -74,5 +74,11 @@
     "access": "public"
   },
   "author": "arandevcode",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arandevcode/opencode-plugins.git",
+    "directory": "opencode-quota-extended"
+  },
+  "homepage": "https://github.com/arandevcode/opencode-plugins/tree/main/opencode-quota-extended#readme"
 }
