@@ -28,6 +28,10 @@ Animated visual indicators when the model is processing — rainbow border aroun
 
 ## Install
 
+One package for both OpenCode generations: it ships an entry for each and loads the right one.
+
+### OpenCode 1.x
+
 ```sh
 opencode plugin --global --force @arandevcode/opencode-thinking
 ```
@@ -43,13 +47,28 @@ Or install from GitHub source to follow latest development:
 }
 ```
 
-### OpenCode 2 (early preview)
+### OpenCode 2 (preview)
 
-The same package works on OpenCode 1.x and OpenCode 2: it ships one entry for each and loads the right one. V2 support is new (tested on OpenCode 2.1.2), so please report anything odd.
+```sh
+opencode plugin add @arandevcode/opencode-thinking
+```
+
+On OpenCode 2 the plugin command is `plugin add` (not `plugin --global`). Support for OpenCode 2 is new; please [open an issue](https://github.com/arandevcode/opencode-plugins/issues) if something looks wrong.
+
+### Compatibility
+
+| Feature | OpenCode 1.x | OpenCode 2 |
+|---|---|---|
+| WORKING / IDLE indicator | ✅ | ✅ above the message box |
+| Rainbow border around the message box | ✅ | ❌ OpenCode 2 does not let plugins wrap the message box |
+| Sidebar glow | ✅ | ✅ |
+| `/thinking_visual` command | ✅ | ✅ |
 
 ## Uninstall
 
-Three steps, in order:
+**OpenCode 2:** run `opencode plugin remove @arandevcode/opencode-thinking`, then do the optional clean-up steps below.
+
+**OpenCode 1.x:** Three steps, in order:
 
 1. Remove the plugin entry from your OpenCode config (`~/.config/opencode/opencode.json`):
 

@@ -30,6 +30,10 @@ Heavily inspired by [`@slkiser/opencode-quota`](https://github.com/slkiser/openc
 
 ## Install
 
+One package for both OpenCode generations: it ships an entry for each and loads the right one.
+
+### OpenCode 1.x
+
 ```sh
 opencode plugin --global --force @arandevcode/opencode-quota-extended
 ```
@@ -45,13 +49,27 @@ Or install from GitHub source to follow latest development:
 }
 ```
 
-### OpenCode 2 (early preview)
+### OpenCode 2 (preview)
 
-The same package works on OpenCode 1.x and OpenCode 2: it ships one entry for each and loads the right one. V2 support is new (tested on OpenCode 2.1.2), so please report anything odd.
+```sh
+opencode plugin add @arandevcode/opencode-quota-extended
+```
+
+On OpenCode 2 the plugin command is `plugin add` (not `plugin --global`). Support for OpenCode 2 is new; please [open an issue](https://github.com/arandevcode/opencode-plugins/issues) if something looks wrong.
+
+### Compatibility
+
+| Feature | OpenCode 1.x | OpenCode 2 |
+|---|---|---|
+| Quota cards in the sidebar | ✅ | ✅ |
+| Live quota from OpenAI, Copilot and OpenCode Go | ✅ | ⚠️ not yet tested with real accounts |
+| `quota` CLI | ✅ | ✅ (does not depend on OpenCode) |
 
 ## Uninstall
 
-Four steps, in order:
+**OpenCode 2:** run `opencode plugin remove @arandevcode/opencode-quota-extended`, then do the optional clean-up steps below.
+
+**OpenCode 1.x:** Four steps, in order:
 
 1. Remove the plugin entry from your OpenCode config (`~/.config/opencode/opencode.json`):
 

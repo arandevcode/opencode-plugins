@@ -29,7 +29,7 @@ opencode plugin --global --force @arandevcode/opencode-thinking
 opencode plugin --global --force @arandevcode/opencode-quota-extended
 ```
 
-Both plugins work on OpenCode 1.x and OpenCode 2 (V2 support is an early preview).
+Both plugins work on OpenCode 1.x and OpenCode 2 (preview). On OpenCode 2 install with `opencode plugin add <package>`; each plugin's README has a compatibility table.
 
 ## Uninstall
 

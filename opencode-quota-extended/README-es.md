@@ -29,6 +29,10 @@ Inspirado por [`@slkiser/opencode-quota`](https://github.com/slkiser/opencode-qu
 
 ## Instalación
 
+Un solo paquete para las dos generaciones de OpenCode: trae una entrada para cada una y carga la que toca.
+
+### OpenCode 1.x
+
 ```sh
 opencode plugin --global --force @arandevcode/opencode-quota-extended
 ```
@@ -46,11 +50,25 @@ O instala desde GitHub para seguir el desarrollo más reciente:
 
 ### OpenCode 2 (versión preliminar)
 
-El mismo paquete funciona en OpenCode 1.x y en OpenCode 2: trae una entrada para cada uno y carga la que toca. El soporte V2 es nuevo (probado en OpenCode 2.1.2); si ves algo raro, abre un issue.
+```sh
+opencode plugin add @arandevcode/opencode-quota-extended
+```
+
+En OpenCode 2 el comando es `plugin add` (no `plugin --global`). El soporte para OpenCode 2 es nuevo; si ves algo raro, [abre un issue](https://github.com/arandevcode/opencode-plugins/issues).
+
+### Compatibilidad
+
+| Función | OpenCode 1.x | OpenCode 2 |
+|---|---|---|
+| Tarjetas de cuota en la barra lateral | ✅ | ✅ |
+| Cuota en vivo de OpenAI, Copilot y OpenCode Go | ✅ | ⚠️ aún no probado con cuentas reales |
+| CLI `quota` | ✅ | ✅ (no depende de OpenCode) |
 
 ## Desinstalación
 
-Cuatro pasos, en orden:
+**OpenCode 2:** ejecuta `opencode plugin remove @arandevcode/opencode-quota-extended` y después, si quieres, los pasos opcionales de limpieza de abajo.
+
+**OpenCode 1.x:** Cuatro pasos, en orden:
 
 1. Quita la entrada del plugin en la config de OpenCode (`~/.config/opencode/opencode.json`):
 
