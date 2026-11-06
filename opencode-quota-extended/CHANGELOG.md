@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 — 2026-11-06
+- Fix installation from npm on OpenCode 1.x and 2: accept current `@opentui` versions (0.4 to 0.x), which the OpenCode plugin SDK now pulls in. Before this, `opencode plugin` failed with "unable to resolve dependency tree".
+- README: separate install and uninstall steps for OpenCode 1.x and OpenCode 2, plus a compatibility table.
+
 ## 0.3.0 — 2026-11-06
 - OpenCode 2 support (early preview): the package now registers on both OpenCode 1.x and 2.x; tested on 2.1.2.
 
