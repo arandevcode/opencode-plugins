@@ -241,6 +241,12 @@ export function decorateSidebar(context, api, cleanups) {
                 node.borderStyle = "heavy";
                 changed = true;
             }
+            // Leave one column free on the right: terminals clip the last column,
+            // which was cutting the right side of the frame.
+            if (node.marginRight !== 1) {
+                node.marginRight = 1;
+                changed = true;
+            }
             if (color !== lastColor) {
                 node.borderColor = color;
                 lastColor = color;
@@ -252,6 +258,6 @@ export function decorateSidebar(context, api, cleanups) {
             context.renderer?.requestRender?.();
     };
     apply();
-    const timer = setInterval(apply, 500);
+    const timer = setInterval(apply, 120);
     cleanups.push(() => { clearInterval(timer); remove(); });
 }
