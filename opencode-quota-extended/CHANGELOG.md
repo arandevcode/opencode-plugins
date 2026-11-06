@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 — 2026-11-06
+- OpenCode 2: read OpenAI and GitHub Copilot credentials from OpenCode 2 itself (plugin client `credential.list()`) instead of the OpenCode 1.x `auth.json`. Fixes "OpenAI: Token expired" caused by a stale OpenCode 1.x token.
+- If OpenCode 2 has no credential for a provider, the OpenCode 1.x `auth.json` is still used as a fallback, and error messages now say which source was used.
+- The plugin never refreshes tokens; an expired OpenCode 2 token is refreshed by OpenCode 2 on its next model request.
+- OpenCode 1.x behavior is unchanged.
+
 ## 0.3.1 — 2026-11-06
 - Fix installation from npm on OpenCode 1.x and 2: accept current `@opentui` versions (0.4 to 0.x), which the OpenCode plugin SDK now pulls in. Before this, `opencode plugin` failed with "unable to resolve dependency tree".
 - README: separate install and uninstall steps for OpenCode 1.x and OpenCode 2, plus a compatibility table.

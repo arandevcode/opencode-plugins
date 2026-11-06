@@ -1,6 +1,6 @@
 import type { Provider, ProviderContext } from "./types.js";
 import type { ProviderQuota, QuotaWindow } from "../lib/types.js";
-import { readAuthFileCached } from "../lib/auth.js";
+import { describeAuthSource, readAuthFileCached } from "../lib/auth.js";
 import { fetchWithTimeout } from "../lib/http.js";
 
 type CopilotAuthEntry = {
@@ -244,7 +244,8 @@ export const copilotProvider: Provider = {
         try {
           snippet = (await res.text()).slice(0, 120);
         } catch {}
-        return err(fetchedAt, `Copilot API error ${res.status}: ${snippet}`);
+        const source = describeAuthSource(entry);
+        return err(fetchedAt, `Copilot API error ${res.status}: ${snippet}${source ? ` (using ${source})` : ""}`);
       }
 
       const data = (await res.json()) as Record<string, unknown>;

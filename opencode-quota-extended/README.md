@@ -62,7 +62,8 @@ On OpenCode 2 the plugin command is `plugin add` (not `plugin --global`). Suppor
 | Feature | OpenCode 1.x | OpenCode 2 |
 |---|---|---|
 | Quota cards in the sidebar | ✅ | ✅ |
-| Live quota from OpenAI, Copilot and OpenCode Go | ✅ | ⚠️ not yet tested with real accounts |
+| Live quota from OpenAI and Copilot | ✅ | ✅ uses OpenCode 2's own logins (falls back to OpenCode 1.x `auth.json`, and says so) |
+| Live quota from OpenCode Go | ✅ | ⚠️ API key via env var or sidecar file; not read from OpenCode 2 logins yet |
 | `quota` CLI | ✅ | ✅ (does not depend on OpenCode) |
 
 ## Uninstall

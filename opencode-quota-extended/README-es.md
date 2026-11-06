@@ -61,7 +61,8 @@ En OpenCode 2 el comando es `plugin add` (no `plugin --global`). El soporte para
 | Función | OpenCode 1.x | OpenCode 2 |
 |---|---|---|
 | Tarjetas de cuota en la barra lateral | ✅ | ✅ |
-| Cuota en vivo de OpenAI, Copilot y OpenCode Go | ✅ | ⚠️ aún no probado con cuentas reales |
+| Cuota en vivo de OpenAI y Copilot | ✅ | ✅ usa los inicios de sesión de OpenCode 2 (si no hay, usa el `auth.json` de OpenCode 1.x y lo indica) |
+| Cuota en vivo de OpenCode Go | ✅ | ⚠️ clave de API por variable de entorno o archivo auxiliar; aún no se lee de OpenCode 2 |
 | CLI `quota` | ✅ | ✅ (no depende de OpenCode) |
 
 ## Desinstalación

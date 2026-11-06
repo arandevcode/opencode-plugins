@@ -1,4 +1,4 @@
-import { readAuthFileCached } from "../lib/auth.js";
+import { describeAuthSource, readAuthFileCached } from "../lib/auth.js";
 import { fetchWithTimeout } from "../lib/http.js";
 import { clampPercent } from "../lib/reset-format.js";
 const USAGE_URL = "https://chatgpt.com/backend-api/wham/usage";
@@ -17,6 +17,14 @@ function pickAuthEntry(auth) {
         return entry;
     }
     return null;
+}
+function expiredMessage(entry) {
+    const source = describeAuthSource(entry);
+    if (!source)
+        return "Token expired";
+    return source.startsWith("OpenCode 2")
+        ? "Token expired (using OpenCode 2 credentials; send a prompt to refresh them)"
+        : "Token expired (using OpenCode 1.x credentials; no OpenAI login found in OpenCode 2)";
 }
 function buildLabel(planType) {
     if (typeof planType !== "string" || planType.length === 0)
@@ -102,7 +110,7 @@ export const openaiProvider = {
                     id: "openai",
                     label: "OpenAI",
                     status: "error",
-                    error: "Token expired",
+                    error: expiredMessage(entry),
                     windows: [],
                     fetchedAt,
                 };

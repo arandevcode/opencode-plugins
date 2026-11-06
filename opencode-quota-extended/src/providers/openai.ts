@@ -8,7 +8,7 @@
 import type { Provider } from "./types.js";
 import type { ProviderContext } from "./types.js";
 import type { ProviderQuota, QuotaWindow, WindowId } from "../lib/types.js";
-import { readAuthFileCached } from "../lib/auth.js";
+import { describeAuthSource, readAuthFileCached } from "../lib/auth.js";
 import { fetchWithTimeout } from "../lib/http.js";
 import { clampPercent } from "../lib/reset-format.js";
 
@@ -27,6 +27,14 @@ function pickAuthEntry(auth: Awaited<ReturnType<typeof readAuthFileCached>>): Au
     return entry;
   }
   return null;
+}
+
+function expiredMessage(entry: AuthEntry): string {
+  const source = describeAuthSource(entry);
+  if (!source) return "Token expired";
+  return source.startsWith("OpenCode 2")
+    ? "Token expired (using OpenCode 2 credentials; send a prompt to refresh them)"
+    : "Token expired (using OpenCode 1.x credentials; no OpenAI login found in OpenCode 2)";
 }
 
 function buildLabel(planType: unknown): string {
@@ -113,7 +121,7 @@ export const openaiProvider: Provider = {
           id: "openai",
           label: "OpenAI",
           status: "error",
-          error: "Token expired",
+          error: expiredMessage(entry),
           windows: [],
           fetchedAt,
         };

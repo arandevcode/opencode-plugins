@@ -5,6 +5,7 @@ import { loadCardsConfig } from "./config/loader.js";
 import { createRefreshScheduler } from "./lib/refresh-scheduler.js";
 import { collectSnapshot } from "./providers/registry.js";
 import { SidebarPanel } from "./ui/SidebarPanel.js";
+import { setV2CredentialLoader, type V2CredentialEntry } from "./lib/auth.js";
 import { createQuotaV2Api, type V2Context } from "./v2.js";
 
 const REFRESH_INTERVAL_MS = 60_000;
@@ -99,6 +100,14 @@ export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
 export async function quotaCardsTuiV2(context: V2Context): Promise<() => void> {
   const cleanups: Array<() => void> = [];
   const api = createQuotaV2Api(context, cleanups);
+  // Prefer OpenCode 2's own credentials (official client API); auth.json is only a fallback.
+  const list = context.client?.credential?.list;
+  setV2CredentialLoader(
+    typeof list === "function"
+      ? async () => (await list.call(context.client!.credential)) as V2CredentialEntry[]
+      : async () => null,
+  );
+  cleanups.push(() => setV2CredentialLoader(null));
   await quotaCardsTuiPlugin(api, context.options ?? {}, {} as any);
   return () => {
     for (const cleanup of cleanups.reverse()) {

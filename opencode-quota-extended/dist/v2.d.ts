@@ -27,6 +27,11 @@ export type V2Theme = {
 export type V2Context = {
     theme?: V2Theme;
     options?: Record<string, unknown>;
+    client?: {
+        credential?: {
+            list?: () => Promise<unknown>;
+        };
+    };
     data?: {
         on?: (type: string, handler: (event: unknown) => void) => () => void;
         listen?: (handler: (event: unknown) => void) => () => void;

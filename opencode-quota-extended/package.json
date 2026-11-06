@@ -1,6 +1,6 @@
 {
   "name": "@arandevcode/opencode-quota-extended",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "OpenCode plugin: quota usage cards with theme-colored gauge progress bars (5h / weekly / monthly) for OpenAI, GitHub Copilot and OpenCode Go in the TUI sidebar.",
   "type": "module",
   "main": "./dist/index.js",

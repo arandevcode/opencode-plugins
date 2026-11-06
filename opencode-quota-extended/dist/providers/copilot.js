@@ -1,4 +1,4 @@
-import { readAuthFileCached } from "../lib/auth.js";
+import { describeAuthSource, readAuthFileCached } from "../lib/auth.js";
 import { fetchWithTimeout } from "../lib/http.js";
 const COPILOT_INTERNAL_URL = "https://api.github.com/copilot_internal/user";
 const USER_AGENT = "opencode-quota-extended/0.1.0";
@@ -222,7 +222,8 @@ export const copilotProvider = {
                     snippet = (await res.text()).slice(0, 120);
                 }
                 catch { }
-                return err(fetchedAt, `Copilot API error ${res.status}: ${snippet}`);
+                const source = describeAuthSource(entry);
+                return err(fetchedAt, `Copilot API error ${res.status}: ${snippet}${source ? ` (using ${source})` : ""}`);
             }
             const data = (await res.json());
             const tierRaw = getFirstString(data, TIER_PATHS);
