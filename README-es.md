@@ -16,6 +16,8 @@ Suite de plugins para [OpenCode](https://opencode.ai).
 
 > 🇬🇧 Also available in [English](README.md)
 
+> 🔁 ¿Quieres lo mismo en Claude Code? Mira [claude-mods](https://github.com/arandevcode/claude-mods).
+
 | Plugin | Tipo | npm | Versión | Descripción |
 |--------|------|-----|---------|-------------|
 | opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.3.0 | Indicadores animados de pensamiento con borde arcoíris e IDLE según el tema |

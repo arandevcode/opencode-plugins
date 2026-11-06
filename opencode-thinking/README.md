@@ -8,6 +8,8 @@
 
 > 🇪🇸 Also available in [Spanish](README-es.md)
 
+> 🔁 Want this on Claude Code? See [glow-thinking](https://github.com/arandevcode/claude-mods/tree/main/glow-thinking).
+
 Animated visual indicators when the model is processing — rainbow border around the input area and sidebar glow. No config needed.
 
 <br>

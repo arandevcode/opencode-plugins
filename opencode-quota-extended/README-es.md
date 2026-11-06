@@ -8,6 +8,8 @@
 
 > 🇬🇧 Also available in [English](README.md)
 
+> 🔁 ¿Quieres esto en Claude Code? Mira [quota-panel](https://github.com/arandevcode/claude-mods/tree/main/quota-panel).
+
 Tarjetas de uso de cuota para la barra lateral TUI — barras de progreso por ventana con colores de semáforo para OpenAI, GitHub Copilot y OpenCode Go.
 
 - Barra de progreso para cada ventana de cuota (5h móvil, semanal, mensual, code review...)

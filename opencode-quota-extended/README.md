@@ -8,6 +8,8 @@
 
 > 🇪🇸 Also available in [Spanish](README-es.md)
 
+> 🔁 Want this on Claude Code? See [quota-panel](https://github.com/arandevcode/claude-mods/tree/main/quota-panel).
+
 Quota usage cards for the TUI sidebar — per-window progress bars with traffic-light colors for OpenAI, GitHub Copilot, and OpenCode Go.
 
 - Progress bar for each quota window (5h rolling, weekly, monthly, code review...)

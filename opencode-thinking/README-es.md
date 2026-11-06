@@ -8,6 +8,8 @@
 
 > 🇬🇧 Also available in [English](README.md)
 
+> 🔁 ¿Quieres esto en Claude Code? Mira [glow-thinking](https://github.com/arandevcode/claude-mods/tree/main/glow-thinking).
+
 Indicadores visuales animados cuando el modelo está procesando — borde arcoíris alrededor del área de entrada y brillo en la barra lateral. Sin configuración necesaria.
 
 <br>
