@@ -130,7 +130,7 @@ export const thinkingVisual = async (api, options) => {
     // Constant element structure: toggling busy/idle only changes props, so the
     // wrapped prompt is never unmounted.
     function wrapPrompt(prompt) {
-        return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { children: [_jsx("box", { flexDirection: "row", justifyContent: "flex-end", height: showA() ? undefined : 0, overflow: "hidden", children: _jsx("box", { borderStyle: "heavy", borderColor: (refreshTheme(), colorForPhase()), paddingX: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [SPINNER[spinnerIdx()], " ", labelForPhase()] }) }) }), prompt
+        return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { children: [_jsx("box", { flexDirection: "row", justifyContent: "flex-end", height: showA() ? undefined : 0, overflow: "hidden", children: _jsx("box", { borderStyle: "heavy", borderColor: (refreshTheme(), colorForPhase()), paddingX: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] }) }) }), prompt
                         ? _jsx("box", { border: showA(), borderStyle: "heavy", borderColor: colorForPhase(), children: prompt })
                         : null] }) }));
     }
@@ -166,7 +166,7 @@ export const thinkingVisual = async (api, options) => {
             prompt_status: () => {
                 if (!showA())
                     return null;
-                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", justifyContent: "flex-end", paddingRight: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [SPINNER[spinnerIdx()], " ", labelForPhase()] }) }) }));
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", justifyContent: "flex-end", paddingRight: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [thinking() ? SPINNER[spinnerIdx()] + " " : "", labelForPhase()] }) }) }));
             },
         },
     });

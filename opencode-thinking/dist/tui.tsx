@@ -130,7 +130,7 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
         <box>
           <box flexDirection="row" justifyContent="flex-end" height={showA() ? undefined : 0} overflow="hidden">
             <box borderStyle="heavy" borderColor={(refreshTheme(), colorForPhase())} paddingX={1}>
-              <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{SPINNER[spinnerIdx()]} {labelForPhase()}</text>
+              <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
             </box>
           </box>
           {prompt
@@ -185,7 +185,7 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
         return (
           <ErrorBoundary fallback={<text>⚠</text>}>
             <box flexDirection="row" justifyContent="flex-end" paddingRight={1}>
-              <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{SPINNER[spinnerIdx()]} {labelForPhase()}</text>
+              <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{thinking() ? SPINNER[spinnerIdx()] + " " : ""}{labelForPhase()}</text>
             </box>
           </ErrorBoundary>
         )
