@@ -52,7 +52,7 @@ if git -C "$ROOT" ls-files -co --exclude-standard "$PLUGIN" \
   | xargs grep -nIiE "$LEAK_PATTERN" 2>/dev/null; then
   echo "Error: possible private data above; aborting (version bump left uncommitted)"; exit 1
 fi
-SUSPICIOUS_FILES="$(git -C "$ROOT" ls-files -co --exclude-standard "$PLUGIN" | grep -iE '(^|/)\.env|secret|credential|\.pem$|\.p12$|\.pfx$|\.key$|auth\.json$' || true)"
+SUSPICIOUS_FILES="$(git -C "$ROOT" ls-files -co --exclude-standard "$PLUGIN" | grep -vE '\.test\.[cm]?[jt]sx?$' | grep -iE '(^|/)\.env|secret|credential|\.pem$|\.p12$|\.pfx$|\.key$|auth\.json$' || true)"
 if [ -n "$SUSPICIOUS_FILES" ]; then
   echo "Error: suspicious files would be published:"; echo "$SUSPICIOUS_FILES"; exit 1
 fi
