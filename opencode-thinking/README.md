@@ -43,6 +43,10 @@ Or install from GitHub source to follow latest development:
 }
 ```
 
+### OpenCode 2 (early preview)
+
+The same package works on OpenCode 1.x and OpenCode 2: it ships one entry for each and loads the right one. V2 support is new (tested on OpenCode 2.1.2), so please report anything odd.
+
 ## Uninstall
 
 Three steps, in order:

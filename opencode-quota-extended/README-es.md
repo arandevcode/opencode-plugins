@@ -44,6 +44,10 @@ O instala desde GitHub para seguir el desarrollo más reciente:
 }
 ```
 
+### OpenCode 2 (versión preliminar)
+
+El mismo paquete funciona en OpenCode 1.x y en OpenCode 2: trae una entrada para cada uno y carga la que toca. El soporte V2 es nuevo (probado en OpenCode 2.1.2); si ves algo raro, abre un issue.
+
 ## Desinstalación
 
 Cuatro pasos, en orden:

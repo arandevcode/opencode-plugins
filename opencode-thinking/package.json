@@ -61,7 +61,8 @@
     "images",
     "LICENSE",
     "src",
-    "example.opencode.json"
+    "example.opencode.json",
+    "CHANGELOG.md"
   ],
   "repository": {
     "type": "git",

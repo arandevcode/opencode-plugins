@@ -35,7 +35,8 @@
     "scripts/setup.mjs",
     "README.md",
     "README-es.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "clean": "node scripts/clean.mjs",
