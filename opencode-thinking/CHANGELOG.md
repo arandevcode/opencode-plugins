@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2 — 2026-11-06
+- Fix: on OpenCode 2 the WORKING/IDLE indicator stayed on IDLE while the model was running. The TUI event listener receives `{ details }` and the adapter read `event.type` from the wrapper, so `session.execution.started` never matched. The adapter now unwraps the envelope (and still accepts unwrapped events).
+- Fix: treat `session.execution.interrupted` as idle, alongside `succeeded` and `failed`.
+- Fix: no more stray empty bordered box above the prompt on OpenCode 2, where the prompt element is not available.
+
 ## 0.3.0 — 2026-11-06
 - OpenCode 2 support (early preview): the package now registers on both OpenCode 1.x and 2.x; tested on 2.1.2.
 - Fix installation from npm on OpenCode 1.x and 2: accept current `@opentui` versions (0.4 to 0.x). Before this, `opencode plugin` failed with "unable to resolve dependency tree".

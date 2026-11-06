@@ -59,9 +59,29 @@ test("V2 TUI adapter maps slots and cleans up", async () => {
     },
   })
   assert.deepEqual(slots.map((slot) => slot.append), ["session.composer.top", "home.footer.status", "sidebar.content"])
-  listener?.({ type: "session.execution.started" })
-  listener?.({ type: "session.execution.succeeded" })
+
+  const statuses = []
+  api.event.on("session.status", (event) => statuses.push(event.properties.status.type))
+  listener?.({ details: { type: "session.execution.started", data: { sessionID: "ses_1" } } })
+  listener?.({ details: { type: "session.execution.succeeded", data: { sessionID: "ses_1" } } })
+  listener?.({ details: { type: "session.execution.started", data: { sessionID: "ses_2" } } })
+  listener?.({ details: { type: "session.execution.interrupted", data: { sessionID: "ses_2" } } })
+  assert.deepEqual(statuses, ["busy", "idle", "busy", "idle"])
   assert.ok(cleanups.length >= 1)
+})
+
+test("V2 TUI adapter accepts unwrapped events and ignores unknown ones", () => {
+  let listener
+  const api = createThinkingV2Api(
+    { data: { listen: (fn) => { listener = fn; return () => {} } } },
+    [],
+  )
+  const statuses = []
+  api.event.on("session.status", (event) => statuses.push(event.properties.status.type))
+  listener?.({ type: "session.execution.started" })
+  listener?.({ type: "message.updated" })
+  listener?.({ details: { type: "session.execution.failed", data: { sessionID: "ses_1" } } })
+  assert.deepEqual(statuses, ["busy", "idle"])
 })
 
 test("V2 TUI setup returns a cleanup", async () => {

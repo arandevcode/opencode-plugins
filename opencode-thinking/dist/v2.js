@@ -29,13 +29,23 @@ export function createThinkingV2Api(context, cleanups) {
         handlers.get(type)?.(event);
         if (type === "session.execution.started")
             handlers.get("session.status")?.({ properties: { status: { type: "busy" } } });
-        if (type === "session.execution.succeeded" || type === "session.execution.failed") {
+        if (type === "session.execution.succeeded" ||
+            type === "session.execution.failed" ||
+            type === "session.execution.interrupted") {
             handlers.get("session.status")?.({ properties: { status: { type: "idle" } } });
             handlers.get("session.idle")?.({});
         }
     };
+    // OpenCode 2 delivers events as `{ details: OpenCodeEvent }`, while older
+    // previews passed the event itself. Accept both shapes.
+    const unwrapEvent = (event) => (event && typeof event === "object" && "details" in event ? event.details : event);
     if (context.data?.listen) {
-        cleanups.push(context.data.listen((event) => emit(String(event?.type ?? ""), event)));
+        cleanups.push(context.data.listen((event) => {
+            const details = unwrapEvent(event);
+            const type = String(details?.type ?? "");
+            if (type)
+                emit(type, details);
+        }));
     }
     const event = {
         on(type, handler) {

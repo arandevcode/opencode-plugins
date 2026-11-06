@@ -132,9 +132,11 @@ export const thinkingVisual: TuiPlugin = async (api, options) => {
               <text fg={colorForPhase()} attributes={TextAttributes.BOLD}>{SPINNER[spinnerIdx()]} {labelForPhase()}</text>
             </box>
           </box>
-          <box border={showA()} borderStyle="heavy" borderColor={colorForPhase()}>
-            {prompt}
-          </box>
+          {prompt
+            ? <box border={showA()} borderStyle="heavy" borderColor={colorForPhase()}>
+                {prompt}
+              </box>
+            : null}
         </box>
       </ErrorBoundary>
     )
