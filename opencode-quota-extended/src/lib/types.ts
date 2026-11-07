@@ -73,6 +73,8 @@ export interface ProviderQuota {
   windows: QuotaWindow[];
   /** Timestamp the snapshot was taken. */
   fetchedAt: string;
+  /** Why the provider is skipped and what to do about it (status === "skipped"). */
+  hint?: string;
   /** Credit balance, when the provider exposes it and the lookup succeeded. */
   balance?: ProviderBalance;
 }

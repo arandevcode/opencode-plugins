@@ -17,6 +17,7 @@ import type { Provider, ProviderContext } from "./types.js";
 import type { ProviderBalance, ProviderQuota, QuotaWindow, WindowId } from "../lib/types.js";
 import { resolveOpenCodeGoInstanceCached } from "../lib/opencode-go-config.js";
 import type { OpenCodeGoConfig } from "../lib/opencode-go-config.js";
+import { setupPathFor } from "../lib/opencode-go-config.js";
 import { fetchWithTimeout } from "../lib/http.js";
 import { clampPercent } from "../lib/reset-format.js";
 
@@ -212,6 +213,19 @@ export function createOpenCodeGoProvider(opts: OpenCodeGoProviderOptions): Provi
     async isAvailable(): Promise<boolean> {
       const r = await resolveOpenCodeGoInstanceCached(id);
       return r.state === "configured";
+    },
+    async unavailableHint(): Promise<string> {
+      const r = await resolveOpenCodeGoInstanceCached(id);
+      if (r.state === "incomplete") {
+        return `missing ${r.missing} in ${r.source}`;
+      }
+      if (r.state === "invalid") {
+        return `invalid config in ${r.source}: ${r.error}`;
+      }
+      if (r.state === "none") {
+        return `no API key. Set OPENCODE_GO_API_KEY or put {"apiKey":"oc_sk_..."} in ${setupPathFor(id)}`;
+      }
+      return "not available";
     },
     async fetch(ctx: ProviderContext): Promise<ProviderQuota> {
       const fetchedAt = new Date().toISOString();

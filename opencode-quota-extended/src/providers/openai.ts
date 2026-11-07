@@ -101,6 +101,16 @@ export const openaiProvider: Provider = {
     return pickAuthEntry(auth) !== null;
   },
 
+  async unavailableHint(): Promise<string> {
+    const auth = await readAuthFileCached(5_000);
+    const apiOnly = [auth?.openai, auth?.codex, auth?.chatgpt].some(
+      (e) => e?.type === "api",
+    );
+    return apiOnly
+      ? "signed in with an API key; quota needs a ChatGPT login (run /connect, choose ChatGPT)"
+      : "no ChatGPT login found (run /connect, choose OpenAI > ChatGPT)";
+  },
+
   async fetch(ctx: ProviderContext): Promise<ProviderQuota> {
     const fetchedAt = new Date().toISOString();
     try {

@@ -98,10 +98,17 @@ export async function collectSnapshot(
       available = false;
     }
     if (!available) {
+      let hint: string | undefined;
+      try {
+        hint = await provider.unavailableHint?.(ctx);
+      } catch {
+        hint = undefined;
+      }
       providers.push({
         id: provider.id,
         label: provider.defaultLabel,
         status: "skipped",
+        hint,
         windows: [],
         fetchedAt: new Date().toISOString(),
       });

@@ -210,6 +210,10 @@ export const copilotProvider: Provider = {
     return pickAuthEntry(auth) !== null;
   },
 
+  async unavailableHint(): Promise<string> {
+    return "no GitHub Copilot login found (run /connect, choose GitHub Copilot)";
+  },
+
   async fetch(ctx: ProviderContext): Promise<ProviderQuota> {
     const fetchedAt = new Date().toISOString();
     try {

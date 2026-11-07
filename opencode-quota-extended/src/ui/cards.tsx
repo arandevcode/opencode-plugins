@@ -19,7 +19,14 @@ export function ProviderCards(props: {
   const errorColor = () => theme().error;
   const credit = () => formatBalance(props.provider.balance);
 
-  if (props.provider.status === "skipped") return null;
+  if (props.provider.status === "skipped") {
+    if (!props.provider.hint) return null;
+    return (
+      <text fg={muted()}>
+        {props.provider.label}: {props.provider.hint}
+      </text>
+    );
+  }
 
   if (props.provider.status === "no-auth") {
     return (
