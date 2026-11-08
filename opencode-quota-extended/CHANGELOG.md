@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- Providers without credentials are no longer hidden. The panel shows a line saying exactly what is missing and how to fix it (for example, the `OPENCODE_GO_API_KEY` variable or the `opencode-go.json` path for OpenCode Go, or the `/connect` login for OpenAI and GitHub Copilot). Before, the header could read `1/3` with no explanation.
+- OpenCode Go: a 401/403 response now points at the key's permissions (create a personal API key with All permissions, not a service account).
+- Thanks to @scottchiefbaker for reporting the confusing `1/3` panel (#3), and to @irlevesque for the early `usagePercent` fix (#2), whose parser has since been replaced by the API-key endpoint.
+
 ## 0.3.2 — 2026-11-06
 - OpenCode 2: read OpenAI and GitHub Copilot credentials from OpenCode 2 itself (plugin client `credential.list()`) instead of the OpenCode 1.x `auth.json`. Fixes "OpenAI: Token expired" caused by a stale OpenCode 1.x token.
 - If OpenCode 2 has no credential for a provider, the OpenCode 1.x `auth.json` is still used as a fallback, and error messages now say which source was used.
