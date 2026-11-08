@@ -257,10 +257,15 @@ export function createOpenCodeGoProvider(opts: OpenCodeGoProviderOptions): Provi
         );
         const bodyText = await res.text();
         if (!res.ok) {
+          const authFailed = res.status === 401 || res.status === 403;
+          const tip =
+            authFailed && r.config.auth === "api-key"
+              ? ". Key rejected: create a personal API key with All permissions (not a service account)"
+              : "";
           return {
             ...base,
             status: "error",
-            error: `OpenCode Go API error ${res.status}: ${bodyText.slice(0, 120)}`,
+            error: `OpenCode Go API error ${res.status}: ${bodyText.slice(0, 120)}${tip}`,
           };
         }
         let data: unknown;
