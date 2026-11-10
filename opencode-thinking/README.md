@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-thinking/images/opencode-thinking-v2.gif" alt="WORKING, WAITING and IDLE bands in an OpenCode session" width="480">
   <br>
-  <sub><em>WORKING → WAITING · TASK → IDLE over a turn with a subagent and a background task (made-up data)</em></sub>
+  <sub><em>WORKING → WAITING · TASK → IDLE in a real OpenCode 2 session (everything that is not the plugin is blurred)</em></sub>
 </p>
 
 # @arandevcode/opencode-thinking
