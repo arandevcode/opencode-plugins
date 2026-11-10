@@ -180,3 +180,31 @@ describe("API-key configs", () => {
     if (r.state === "incomplete") expect(r.missing).toBe("apiKey");
   });
 });
+
+describe("default instance honours the documented environment variables", () => {
+  it("reads OPENCODE_GO_API_KEY for the default instance", async () => {
+    process.env.OPENCODE_GO_API_KEY = "oc_sk_from_env";
+    mod.clearOpenCodeGoConfigCache();
+    const r = await mod.resolveOpenCodeGoInstanceCached("opencode-go");
+    expect(r.state).toBe("configured");
+    if (r.state === "configured") {
+      expect(r.source).toBe("env");
+      expect(r.config).toEqual({ auth: "api-key", apiKey: "oc_sk_from_env" });
+    }
+  });
+
+  it("falls back to opencode-go.json when the variable is not set", async () => {
+    await writeFile(join(dir, "opencode-quota", "opencode-go.json"), JSON.stringify({ apiKey: "oc_sk_from_file" }));
+    mod.clearOpenCodeGoConfigCache();
+    const r = await mod.resolveOpenCodeGoInstanceCached("opencode-go");
+    expect(r.state).toBe("configured");
+    if (r.state === "configured") expect(r.config).toEqual({ auth: "api-key", apiKey: "oc_sk_from_file" });
+  });
+
+  it("does not apply the variable to extra instances", async () => {
+    process.env.OPENCODE_GO_API_KEY = "oc_sk_from_env";
+    mod.clearOpenCodeGoConfigCache();
+    const r = await mod.resolveOpenCodeGoInstanceCached("opencode-go-work");
+    expect(r.state).toBe("none");
+  });
+});

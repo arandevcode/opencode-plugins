@@ -141,6 +141,10 @@ export async function resolveOpenCodeGoConfig() {
 }
 /** Resolve the config for a specific instance id. */
 export async function resolveOpenCodeGoInstance(id) {
+    // The default instance also honours the environment variables, as documented:
+    // env first, then opencode-go.json. Extra instances are sidecar files only.
+    if (id === DEFAULT_ID)
+        return resolveOpenCodeGoConfig();
     return resolveFromPaths(getInstanceCandidatePaths(id));
 }
 /**

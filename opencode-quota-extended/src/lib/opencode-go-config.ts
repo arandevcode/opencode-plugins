@@ -169,6 +169,9 @@ export async function resolveOpenCodeGoConfig(): Promise<OpenCodeGoConfigResolut
 export async function resolveOpenCodeGoInstance(
   id: string,
 ): Promise<OpenCodeGoConfigResolution> {
+  // The default instance also honours the environment variables, as documented:
+  // env first, then opencode-go.json. Extra instances are sidecar files only.
+  if (id === DEFAULT_ID) return resolveOpenCodeGoConfig();
   return resolveFromPaths(getInstanceCandidatePaths(id));
 }
 

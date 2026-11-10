@@ -6,6 +6,7 @@
 - Add `window reset since this reading` when a quota window reset after the snapshot was fetched, so an old percentage is not mistaken for live data.
 - Refresh age labels every 30 s without making API requests, and cache the last snapshot (quota numbers only, mode `600`) so readings survive restarts.
 - Providers without credentials are no longer hidden. The panel shows a line saying exactly what is missing and how to fix it (for example, the `OPENCODE_GO_API_KEY` variable or the `opencode-go.json` path for OpenCode Go, or the `/connect` login for OpenAI and GitHub Copilot). Before, the header could read `1/3` with no explanation.
+- Fix: `OPENCODE_GO_API_KEY` (and the other `OPENCODE_GO_*` variables) were documented but ignored for the default OpenCode Go instance, which only read `opencode-go.json`. The variable now works, taking precedence over the file; extra `opencode-go-<name>` instances still use their own files.
 - OpenCode Go: a 401/403 response now points at the key's permissions (create a personal API key with All permissions, not a service account).
 - Thanks to @scottchiefbaker for reporting the confusing `1/3` panel (#3), and to @irlevesque for the early `usagePercent` fix (#2), whose parser has since been replaced by the API-key endpoint.
 
