@@ -15,7 +15,8 @@ Tarjetas de uso de cuota para la barra lateral TUI — barras de progreso por ve
 - Barra de progreso para cada ventana de cuota (5h móvil, semanal, mensual, code review...)
 - Muestra cuándo se reinicia — tiempo restante y fecha exacta
 - Indicador de salud por colores (verde = ok, naranja = advertencia, rojo = crítico)
-- OpenCode Go capable!
+- Antigüedad de cada lectura, aviso ámbar cuando los datos están caducados y marca cuando una ventana se reseteó después de la lectura
+- ¡Compatible con OpenCode Go!
 
 Inspirado por [`@slkiser/opencode-quota`](https://github.com/slkiser/opencode-quota). Ambos coexisten sin conflicto.
 
@@ -126,6 +127,8 @@ npm run quota                 # desde el directorio del repo
 
 Colores de semáforo: verde (ok), naranja (advertencia), rojo (error). Todos los colores vienen del tema activo de OpenCode — se adaptan automáticamente a la paleta del usuario.
 
+Cada proveedor muestra también `read Xm ago`. Si la última consulta falla, la CLI conserva la última lectura correcta y la marca como caducada en vez de eliminar la tarjeta.
+
 ## Configuración
 
 Archivo sidecar opcional en `~/.config/opencode/opencode-quota-extended.json`:
@@ -133,7 +136,7 @@ Archivo sidecar opcional en `~/.config/opencode/opencode-quota-extended.json`:
 | Campo | Tipo | Por defecto | Descripción |
 |---|---|---|---|
 | `enabledProviders` | string[] | `["openai","github-copilot","opencode-go"]` | Proveedores a consultar |
-| `refreshIntervalMs` | int | `60000` | Intervalo de sondeo |
+| `refreshIntervalMs` | int | `60000` | Intervalo de sondeo; una lectura se considera caducada tras 3× este valor |
 | `cardsSidebar.order` | int | `145` | Posición en la barra lateral (menor = más arriba) |
 
 ## Más Información
@@ -149,6 +152,16 @@ Registra un plugin TUI que renderiza un panel `sidebar_content` en la posición 
 | **OpenCode Go** | 5h, Semanal, Mensual + gasto | API key personal (o cookie de sesión legacy) |
 
 Colores de semáforo: ≥50% `theme.success` (verde), 25-49% `theme.warning` (naranja), <25% `theme.error` (rojo).
+
+Cada tarjeta muestra la antigüedad de su lectura, p. ej. `read 2m ago`. Una lectura está caducada cuando supera tres periodos de `refreshIntervalMs` (tres minutos con el intervalo por defecto de 60 s), o cuando la última consulta falló y sigue en pantalla la lectura anterior. La línea de antigüedad pasa a ámbar:
+
+```
+⚠ read 14m ago · run /connect, choose ChatGPT
+```
+
+La acción reutiliza el hint de configuración existente para fallos de credenciales; en fallos de red indica que el panel reintenta automáticamente. Un reloj de UI de 30 s actualiza estas etiquetas sin hacer peticiones a las APIs. Si una ventana de cuota se reseteó después de tomar la lectura, la tarjeta añade `window reset since this reading` para que un porcentaje antiguo no se confunda con datos actuales.
+
+La última instantánea se guarda en `$XDG_CACHE_HOME/opencode-quota-extended/last-snapshot.json` (`~/.cache/...` si no está definido; permisos `600`). Solo contiene cifras de cuota, nunca credenciales, y mantiene visibles las lecturas caducadas entre reinicios. Borrarlo es seguro.
 
 ### Autenticación
 
@@ -201,6 +214,7 @@ También puedes usar `OPENCODE_GO_API_KEY` en vez de un archivo.
 - **El panel no aparece**: `grep '@arandevcode/opencode-quota-extended' ~/.local/share/opencode/log/*.log`
 - **OpenCode Go muestra "skipped"**: confirma que el archivo sidecar o `OPENCODE_GO_API_KEY` está configurado
 - **OpenCode Go muestra 401/403**: la key no es válida, ha caducado o le faltan permisos; crea una key personal **All** (las service account no pueden leer billing)
+- **Los datos parecen antiguos o la línea de edad está en ámbar**: el panel muestra la última lectura correcta. Revisa la red o las credenciales; el hint de la línea indica qué hacer. Para empezar de cero, borra `$XDG_CACHE_HOME/opencode-quota-extended/last-snapshot.json`
 - **Bug antiguo de pinning `@opentui/solid`**: usa `^0.4.1 || ^0.5.0` y reinstala limpio (`rm -rf node_modules && npm ci`)
 
 ### Desarrollo
@@ -234,7 +248,7 @@ src/
   server.ts           # Plugin server (mínimo, sin herramientas)
   tui.tsx             # Plugin TUI: slot sidebar_content
   config/             # defaults, schema, loader
-  lib/                # types, auth, http, formatting, credential resolver
+  lib/                # types, auth, http, formatting, freshness, caché de instantáneas
   providers/          # openai.ts, copilot.ts, opencode-go.ts, registry.ts
   ui/                 # SidebarPanel, cards, progress-bar
 tests/                # tests unitarios vitest

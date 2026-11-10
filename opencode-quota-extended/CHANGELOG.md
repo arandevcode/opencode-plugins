@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-11-10
+- Show the age of each provider's reading (`read 3m ago`) and turn the line amber once it is older than three polling intervals. The threshold follows `refreshIntervalMs`, so changing the polling interval also changes when data is considered stale.
+- If a fetch fails (401/403, network error, provider outage), keep the last successful reading on screen as `stale` instead of replacing it with an error. Credential failures reuse the existing setup hint. The CLI does the same and prints the reading age.
+- Add `window reset since this reading` when a quota window reset after the snapshot was fetched, so an old percentage is not mistaken for live data.
+- Refresh age labels every 30 s without making API requests, and cache the last snapshot (quota numbers only, mode `600`) so readings survive restarts.
 - Providers without credentials are no longer hidden. The panel shows a line saying exactly what is missing and how to fix it (for example, the `OPENCODE_GO_API_KEY` variable or the `opencode-go.json` path for OpenCode Go, or the `/connect` login for OpenAI and GitHub Copilot). Before, the header could read `1/3` with no explanation.
 - OpenCode Go: a 401/403 response now points at the key's permissions (create a personal API key with All permissions, not a service account).
 - Thanks to @scottchiefbaker for reporting the confusing `1/3` panel (#3), and to @irlevesque for the early `usagePercent` fix (#2), whose parser has since been replaced by the API-key endpoint.

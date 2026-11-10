@@ -7,6 +7,14 @@ import { collectSnapshot } from "../dist/providers/registry.js";
 import { renderProgressBar, trafficLight } from "../dist/ui/progress-bar.js";
 import { formatResetCombined } from "../dist/lib/reset-format.js";
 import { formatBalance, formatWindowSpend } from "../dist/lib/balance.js";
+import {
+  actionableHint,
+  formatReadingAge,
+  isCredentialError,
+  isReadingStale,
+  windowResetSinceReading,
+} from "../dist/lib/freshness.js";
+import { loadSnapshotCache, saveSnapshotCache } from "../dist/lib/snapshot-cache.js";
 
 const INDENT = 4;
 
@@ -54,7 +62,10 @@ async function main() {
 
   console.log(`\n${BOLD}Quota${RESET}\n`);
 
-  const snapshot = await collectSnapshot(config);
+  const cached = await loadSnapshotCache();
+  const snapshot = await collectSnapshot(config, cached?.snapshot);
+  await saveSnapshotCache(snapshot);
+  const now = Date.now();
 
   for (const provider of snapshot.providers) {
     if (provider.status === "skipped") continue;
@@ -81,6 +92,24 @@ async function main() {
       `  ${BOLD}${provider.label}${RESET}${credit ? `  ${COLORS.accent}${credit}${RESET}` : ""}`,
     );
 
+    const stale =
+      provider.status === "stale" ||
+      isReadingStale(provider.fetchedAt, now, config.refreshIntervalMs);
+    const age = formatReadingAge(provider.fetchedAt, now);
+    if (stale) {
+      const hint = actionableHint(provider.hint);
+      const action =
+        hint ??
+        (isCredentialError(provider.error)
+          ? "check provider credentials"
+          : "run again to refresh");
+      console.log(
+        " ".repeat(INDENT) + COLORS.warning + `⚠ ${age} · ${action}` + RESET,
+      );
+    } else {
+      console.log(" ".repeat(INDENT) + DIM + age + RESET);
+    }
+
     for (const [i, win] of provider.windows.entries()) {
       if (i > 0) console.log();
       const pct = win.percentRemaining;
@@ -98,6 +127,14 @@ async function main() {
       console.log(" ".repeat(INDENT) + padRight(leftStr, rightStr));
       const spend = formatWindowSpend(win);
       if (spend) console.log(" ".repeat(INDENT) + DIM + spend + RESET);
+      if (windowResetSinceReading(win.resetTimeIso, provider.fetchedAt, now)) {
+        console.log(
+          " ".repeat(INDENT) +
+            COLORS.warning +
+            "window reset since this reading · run again to refresh" +
+            RESET,
+        );
+      }
     }
     console.log();
   }

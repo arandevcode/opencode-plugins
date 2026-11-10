@@ -7,11 +7,12 @@ import { collectSnapshot } from "./providers/registry.js";
 import { SidebarPanel } from "./ui/SidebarPanel.js";
 import { setV2CredentialLoader, type V2CredentialEntry } from "./lib/auth.js";
 import { createQuotaV2Api, type V2Context } from "./v2.js";
+import { loadSnapshotCache, saveSnapshotCache } from "./lib/snapshot-cache.js";
+import type { CardsSnapshot } from "./lib/types.js";
 
 const REFRESH_INTERVAL_MS = 60_000;
+const CLOCK_INTERVAL_MS = 30_000;
 const MOUNT_RECOVERY_DELAY_MS = 1_500;
-
-type CardsSnapshot = Awaited<ReturnType<typeof collectSnapshot>>;
 
 export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
   try {
@@ -24,15 +25,29 @@ export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
 
     // Quota is account-wide, not per session: one shared snapshot and one
     // poller serve every mounted sidebar instead of one per session.
-    const [snapshot, setSnapshot] = createSignal<CardsSnapshot>({
-      generatedAt: new Date(0).toISOString(),
-      providers: [],
-    });
+    // The cache keeps the last reading visible across restarts and gives
+    // failed fetches something to fall back to.
+    const cached = await loadSnapshotCache();
+    let previous = cached?.snapshot;
+    const [snapshot, setSnapshot] = createSignal<CardsSnapshot>(
+      cached?.snapshot ?? {
+        generatedAt: new Date(0).toISOString(),
+        providers: [],
+      },
+    );
 
+    let disposed = false;
+
+    // This clock only repaints age labels; it never triggers provider requests.
+    const [now, setNow] = createSignal(Date.now());
+    const clock = setInterval(() => {
+      if (!disposed) setNow(Date.now());
+    }, CLOCK_INTERVAL_MS);
+
+    const refreshIntervalMs = config.refreshIntervalMs ?? REFRESH_INTERVAL_MS;
     let inFlight = false;
     let queued = false;
     let version = 0;
-    let disposed = false;
 
     const reload = () => {
       if (disposed) return;
@@ -42,8 +57,12 @@ export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
       }
       inFlight = true;
       const v = ++version;
-      collectSnapshot(config).then((next) => {
-        if (v === version && !disposed) setSnapshot(next);
+      collectSnapshot(config, previous).then((next) => {
+        if (v === version && !disposed) {
+          previous = next;
+          setSnapshot(next);
+          void saveSnapshotCache(next);
+        }
       }).catch((err) => {
         const msg = err instanceof Error ? `${err.message}\n${err.stack}` : String(err);
         try { process.stderr.write(`[quota-cards] snapshot refresh failed: ${msg}\n`); } catch {}
@@ -55,7 +74,7 @@ export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
 
     const scheduler = createRefreshScheduler({
       refresh: reload,
-      intervalMs: config.refreshIntervalMs ?? REFRESH_INTERVAL_MS,
+      intervalMs: refreshIntervalMs,
     });
     const unsubs = [
       api.event.on("session.updated", () => scheduler.schedule()),
@@ -66,6 +85,7 @@ export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
 
     const dispose = () => {
       disposed = true;
+      clearInterval(clock);
       scheduler.dispose();
       for (const u of unsubs) u();
     };
@@ -76,7 +96,15 @@ export const quotaCardsTuiPlugin: TuiPlugin = async (api, _options, _meta) => {
     scheduler.schedule(MOUNT_RECOVERY_DELAY_MS, true);
 
     function SidebarContentView() {
-      return <SidebarPanel api={api} config={config} snapshot={snapshot} />;
+      return (
+        <SidebarPanel
+          api={api}
+          config={config}
+          snapshot={snapshot}
+          now={now}
+          refreshIntervalMs={refreshIntervalMs}
+        />
+      );
     }
 
     api.slots.register({

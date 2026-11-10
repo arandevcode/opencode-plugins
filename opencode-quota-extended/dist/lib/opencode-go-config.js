@@ -36,6 +36,12 @@ function getInstanceCandidatePaths(id) {
         return [];
     return getSidecarDirCandidates().map((d) => join(d, `${EXTRA_PREFIX}${suffix}.json`));
 }
+/** Where to create the sidecar file for an instance (first candidate, "~"-shortened). */
+export function setupPathFor(id) {
+    const first = getInstanceCandidatePaths(id)[0] ?? "";
+    const home = homedir();
+    return first.startsWith(home) ? `~${first.slice(home.length)}` : first;
+}
 function fromEnv() {
     const apiKey = process.env.OPENCODE_GO_API_KEY?.trim();
     if (apiKey) {

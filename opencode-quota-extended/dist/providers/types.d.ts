@@ -19,6 +19,11 @@ export interface Provider {
      */
     isAvailable(ctx: ProviderContext): Promise<boolean>;
     /**
+     * Precise, user-facing reason this provider is not available and how to
+     * fix it. Shown in the sidebar instead of hiding the provider.
+     */
+    unavailableHint?(ctx: ProviderContext): Promise<string>;
+    /**
      * Fetch quota data.
      * Returns a ProviderQuota with status="no-auth" | "error" | "ok".
      */

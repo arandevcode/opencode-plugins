@@ -40,6 +40,7 @@ export interface QuotaWindow {
 /** Status of a single provider fetch. */
 export type ProviderStatus =
   | "ok"
+  | "stale"
   | "no-auth"
   | "error"
   | "skipped"
@@ -65,15 +66,21 @@ export interface ProviderQuota {
   id: string;
   /** Display name shown in the sidebar header, e.g. "OpenAI (Pro)". */
   label: string;
-  /** Current status. */
+  /** Current status. "stale" means the last fetch failed but old data is shown. */
   status: ProviderStatus;
-  /** Optional error message when status === "error". */
+  /** Optional error message when status is "error" or "stale". */
   error?: string;
-  /** Per-window usage data. Empty if status !== "ok". */
+  /** Per-window usage data. Empty unless status is "ok" or "stale". */
   windows: QuotaWindow[];
-  /** Timestamp the snapshot was taken. */
+  /**
+   * Timestamp of the reading shown. For status "stale" this is the last
+   * successful fetch, not the failed attempt.
+   */
   fetchedAt: string;
-  /** Why the provider is skipped and what to do about it (status === "skipped"). */
+  /**
+   * Why the provider is skipped and what to do about it (status "skipped"),
+   * or the setup hint attached to a stale credential failure.
+   */
   hint?: string;
   /** Credit balance, when the provider exposes it and the lookup succeeded. */
   balance?: ProviderBalance;

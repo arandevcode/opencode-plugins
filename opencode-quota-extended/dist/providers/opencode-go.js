@@ -1,4 +1,5 @@
 import { resolveOpenCodeGoInstanceCached } from "../lib/opencode-go-config.js";
+import { setupPathFor } from "../lib/opencode-go-config.js";
 import { fetchWithTimeout } from "../lib/http.js";
 import { clampPercent } from "../lib/reset-format.js";
 const GO_STATUS_URL = "https://opencode.ai/console/api/go/status";
@@ -160,6 +161,19 @@ export function createOpenCodeGoProvider(opts) {
             const r = await resolveOpenCodeGoInstanceCached(id);
             return r.state === "configured";
         },
+        async unavailableHint() {
+            const r = await resolveOpenCodeGoInstanceCached(id);
+            if (r.state === "incomplete") {
+                return `missing ${r.missing} in ${r.source}`;
+            }
+            if (r.state === "invalid") {
+                return `invalid config in ${r.source}: ${r.error}`;
+            }
+            if (r.state === "none") {
+                return `no API key. Set OPENCODE_GO_API_KEY or put {"apiKey":"oc_sk_..."} in ${setupPathFor(id)}`;
+            }
+            return "not available";
+        },
         async fetch(ctx) {
             const fetchedAt = new Date().toISOString();
             const base = {
@@ -187,10 +201,14 @@ export function createOpenCodeGoProvider(opts) {
                 const res = await fetchWithTimeout(GO_STATUS_URL, { method: "GET", headers }, ctx.requestTimeoutMs);
                 const bodyText = await res.text();
                 if (!res.ok) {
+                    const authFailed = res.status === 401 || res.status === 403;
+                    const tip = authFailed && r.config.auth === "api-key"
+                        ? ". Key rejected: create a personal API key with All permissions (not a service account)"
+                        : "";
                     return {
                         ...base,
                         status: "error",
-                        error: `OpenCode Go API error ${res.status}: ${bodyText.slice(0, 120)}`,
+                        error: `OpenCode Go API error ${res.status}: ${bodyText.slice(0, 120)}${tip}`,
                     };
                 }
                 let data;

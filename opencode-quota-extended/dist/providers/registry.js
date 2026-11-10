@@ -2,6 +2,7 @@ import { openaiProvider } from "./openai.js";
 import { copilotProvider } from "./copilot.js";
 import { createOpenCodeGoProvider, opencodeGoProvider, } from "./opencode-go.js";
 import { discoverOpenCodeGoInstances } from "../lib/opencode-go-config.js";
+import { isCredentialError } from "../lib/freshness.js";
 const ALL_PROVIDERS = [
     openaiProvider,
     copilotProvider,
@@ -39,10 +40,41 @@ function providerOrder(config, id) {
     return config.enabledProviders.length;
 }
 /**
- * Collect a snapshot by fanning out fetches in parallel for all
- * enabled providers that are available.
+ * Build a stale result from the previous successful reading when the
+ * current fetch failed. Returns undefined when there is no usable data.
  */
-export async function collectSnapshot(config) {
+async function staleFromPrevious(provider, ctx, previous, message) {
+    const prev = previous?.providers.find((p) => p.id === provider.id && p.windows.length > 0);
+    if (!prev)
+        return undefined;
+    let hint;
+    if (isCredentialError(message)) {
+        try {
+            hint = await provider.unavailableHint?.(ctx);
+        }
+        catch {
+            hint = undefined;
+        }
+    }
+    const effectiveHint = hint ?? prev.hint;
+    return {
+        id: provider.id,
+        label: prev.label,
+        status: "stale",
+        error: message,
+        windows: prev.windows,
+        fetchedAt: prev.fetchedAt,
+        ...(effectiveHint ? { hint: effectiveHint } : {}),
+        ...(prev.balance ? { balance: prev.balance } : {}),
+    };
+}
+/**
+ * Collect a snapshot by fanning out fetches in parallel for all
+ * enabled providers that are available. When `previous` is supplied,
+ * a failed fetch keeps that provider's last successful reading and is
+ * reported as "stale" instead of losing the card.
+ */
+export async function collectSnapshot(config, previous) {
     const providers = [];
     const defs = [];
     for (const id of config.enabledProviders) {
@@ -67,10 +99,18 @@ export async function collectSnapshot(config) {
             available = false;
         }
         if (!available) {
+            let hint;
+            try {
+                hint = await provider.unavailableHint?.(ctx);
+            }
+            catch {
+                hint = undefined;
+            }
             providers.push({
                 id: provider.id,
                 label: provider.defaultLabel,
                 status: "skipped",
+                hint,
                 windows: [],
                 fetchedAt: new Date().toISOString(),
             });
@@ -78,14 +118,22 @@ export async function collectSnapshot(config) {
         }
         try {
             const quota = await provider.fetch(ctx);
+            if (quota.status === "error") {
+                const message = quota.error ?? "fetch failed";
+                const stale = await staleFromPrevious(provider, ctx, previous, message);
+                providers.push(stale ?? quota);
+                return;
+            }
             providers.push(quota);
         }
         catch (err) {
-            providers.push({
+            const message = err instanceof Error ? err.message : String(err);
+            const stale = await staleFromPrevious(provider, ctx, previous, message);
+            providers.push(stale ?? {
                 id: provider.id,
                 label: provider.defaultLabel,
                 status: "error",
-                error: err instanceof Error ? err.message : String(err),
+                error: message,
                 windows: [],
                 fetchedAt: new Date().toISOString(),
             });

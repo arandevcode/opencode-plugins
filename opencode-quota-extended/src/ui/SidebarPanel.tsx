@@ -11,12 +11,16 @@ export function SidebarPanel(props: {
   api: TuiPluginApi;
   config: CardsPluginConfig;
   snapshot: () => CardsSnapshot;
+  now: () => number;
+  refreshIntervalMs: number;
 }): JSX.Element {
   const theme = () => props.api.theme.current;
   const titleColor = () => theme().text;
 
   const providerCount = () =>
-    props.snapshot().providers.filter((p) => p.status === "ok").length;
+    props.snapshot().providers.filter(
+      (p) => p.status === "ok" || p.status === "stale",
+    ).length;
   const totalCount = () => props.snapshot().providers.length;
 
   return (
@@ -28,7 +32,15 @@ export function SidebarPanel(props: {
       </box>
       <box flexDirection="column" gap={1}>
         <For each={props.snapshot().providers}>
-          {(p) => <ProviderCards api={props.api} provider={p} showOnlyMultiWindow={props.config.showOnlyMultiWindow} />}
+          {(p) => (
+            <ProviderCards
+              api={props.api}
+              provider={p}
+              showOnlyMultiWindow={props.config.showOnlyMultiWindow}
+              now={props.now}
+              refreshIntervalMs={props.refreshIntervalMs}
+            />
+          )}
         </For>
       </box>
     </box>

@@ -18,7 +18,9 @@ export declare function listProviders(): Provider[];
 export declare function buildContext(config: CardsPluginConfig, providerId: string): ProviderContext;
 /**
  * Collect a snapshot by fanning out fetches in parallel for all
- * enabled providers that are available.
+ * enabled providers that are available. When `previous` is supplied,
+ * a failed fetch keeps that provider's last successful reading and is
+ * reported as "stale" instead of losing the card.
  */
-export declare function collectSnapshot(config: CardsPluginConfig): Promise<CardsSnapshot>;
+export declare function collectSnapshot(config: CardsPluginConfig, previous?: CardsSnapshot): Promise<CardsSnapshot>;
 //# sourceMappingURL=registry.d.ts.map

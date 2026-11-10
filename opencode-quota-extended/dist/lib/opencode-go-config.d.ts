@@ -29,6 +29,8 @@ export interface OpenCodeGoInstance {
     /** Display label, e.g. "Opencode GO (work)". */
     label: string;
 }
+/** Where to create the sidecar file for an instance (first candidate, "~"-shortened). */
+export declare function setupPathFor(id: string): string;
 /** Resolve the default OpenCode Go config (env vars, then opencode-go.json). */
 export declare function resolveOpenCodeGoConfig(): Promise<OpenCodeGoConfigResolution>;
 /** Resolve the config for a specific instance id. */

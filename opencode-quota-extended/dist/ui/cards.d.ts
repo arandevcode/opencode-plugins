@@ -9,5 +9,7 @@ export declare function ProviderCards(props: {
     };
     provider: ProviderQuota;
     showOnlyMultiWindow: boolean;
+    now: () => number;
+    refreshIntervalMs: number;
 }): JSX.Element;
 //# sourceMappingURL=cards.d.ts.map

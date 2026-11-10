@@ -8,18 +8,49 @@ import { trafficLight, trafficLightColorKey } from "./progress-bar.js";
 import { formatResetCombined } from "../lib/reset-format.js";
 import { formatPace, quotaPace } from "../lib/pace.js";
 import { formatBalance, formatWindowSpend } from "../lib/balance.js";
+import {
+  actionableHint,
+  formatReadingAge,
+  isCredentialError,
+  isReadingStale,
+  windowResetSinceReading,
+} from "../lib/freshness.js";
 
 export function ProviderCards(props: {
   api: { theme: { current: TuiThemeCurrent } };
   provider: ProviderQuota;
   showOnlyMultiWindow: boolean;
+  now: () => number;
+  refreshIntervalMs: number;
 }): JSX.Element {
   const theme = () => props.api.theme.current;
   const muted = () => theme().textMuted;
   const errorColor = () => theme().error;
   const credit = () => formatBalance(props.provider.balance);
+  const readingStale = () =>
+    props.provider.status === "stale" ||
+    isReadingStale(
+      props.provider.fetchedAt,
+      props.now(),
+      props.refreshIntervalMs,
+    );
+  const ageText = () => formatReadingAge(props.provider.fetchedAt, props.now());
+  const staleAction = () => {
+    const hint = actionableHint(props.provider.hint);
+    if (hint) return hint;
+    return isCredentialError(props.provider.error)
+      ? "check provider credentials"
+      : "refreshes automatically";
+  };
 
-  if (props.provider.status === "skipped") return null;
+  if (props.provider.status === "skipped") {
+    if (!props.provider.hint) return null;
+    return (
+      <text fg={muted()}>
+        {props.provider.label}: {props.provider.hint}
+      </text>
+    );
+  }
 
   if (props.provider.status === "no-auth") {
     return (
@@ -57,9 +88,19 @@ export function ProviderCards(props: {
         </text>
         {credit() ? <text fg={theme().accent}>{credit()}</text> : null}
       </box>
+      <text fg={readingStale() ? theme().warning : muted()}>
+        {readingStale() ? `⚠ ${ageText()} · ${staleAction()}` : ageText()}
+      </text>
       <box flexDirection="column" gap={1} width="100%">
         <For each={props.provider.windows}>
-          {(window) => <WindowRow api={props.api} window={window} />}
+          {(window) => (
+            <WindowRow
+              api={props.api}
+              window={window}
+              fetchedAt={props.provider.fetchedAt}
+              now={props.now}
+            />
+          )}
         </For>
       </box>
     </box>
@@ -69,10 +110,18 @@ export function ProviderCards(props: {
 function WindowRow(props: {
   api: { theme: { current: TuiThemeCurrent } };
   window: QuotaWindow;
+  fetchedAt: string;
+  now: () => number;
 }): JSX.Element {
   const theme = () => props.api.theme.current;
   const muted = () => theme().textMuted;
   const percent = () => props.window.percentRemaining;
+  const resetSinceReading = () =>
+    windowResetSinceReading(
+      props.window.resetTimeIso,
+      props.fetchedAt,
+      props.now(),
+    );
   const light = () => trafficLight(percent());
   const barColor = () => {
     const key = trafficLightColorKey(light());
@@ -105,6 +154,11 @@ function WindowRow(props: {
           <text fg={muted()}>{spend()}</text>
           <text fg={paceColor()}>{paceText()}</text>
         </box>
+      ) : null}
+      {resetSinceReading() ? (
+        <text fg={theme().warning}>
+          window reset since this reading · refreshes automatically
+        </text>
       ) : null}
     </box>
   );

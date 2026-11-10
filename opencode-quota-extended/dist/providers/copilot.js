@@ -196,6 +196,9 @@ export const copilotProvider = {
         const auth = await readAuthFileCached(5_000);
         return pickAuthEntry(auth) !== null;
     },
+    async unavailableHint() {
+        return "no GitHub Copilot login found (run /connect, choose GitHub Copilot)";
+    },
     async fetch(ctx) {
         const fetchedAt = new Date().toISOString();
         try {

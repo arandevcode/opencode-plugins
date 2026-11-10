@@ -6,5 +6,7 @@ export declare function SidebarPanel(props: {
     api: TuiPluginApi;
     config: CardsPluginConfig;
     snapshot: () => CardsSnapshot;
+    now: () => number;
+    refreshIntervalMs: number;
 }): JSX.Element;
 //# sourceMappingURL=SidebarPanel.d.ts.map

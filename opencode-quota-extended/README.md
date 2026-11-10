@@ -15,6 +15,7 @@ Quota usage cards for the TUI sidebar — per-window progress bars with traffic-
 - Progress bar for each quota window (5h rolling, weekly, monthly, code review...)
 - Shows when it resets — time remaining and exact date
 - Color-coded health indication (green = ok, orange = warning, red = critical)
+- Reading age per provider, with an amber warning when data is stale and a flag when a window reset after the reading
 - OpenCode Go capable!
 
 Heavily inspired by [`@slkiser/opencode-quota`](https://github.com/slkiser/opencode-quota). Both coexist without conflict.
@@ -127,6 +128,8 @@ npm run quota                 # from the repo directory
 
 Traffic-light colors: green (ok), orange (warning), red (error). All colors come from the active OpenCode theme — they adapt to the user's palette automatically.
 
+Each provider also shows `read Xm ago`. If the last fetch failed, the CLI keeps the last successful reading and marks it as stale instead of dropping the card.
+
 ## Configuration
 
 Optional sidecar at `~/.config/opencode/opencode-quota-extended.json`:
@@ -134,7 +137,7 @@ Optional sidecar at `~/.config/opencode/opencode-quota-extended.json`:
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `enabledProviders` | string[] | `["openai","github-copilot","opencode-go"]` | Providers to fetch |
-| `refreshIntervalMs` | int | `60000` | Polling interval |
+| `refreshIntervalMs` | int | `60000` | Polling interval; a reading is considered stale after 3× this value |
 | `cardsSidebar.order` | int | `145` | Sidebar position (lower = higher) |
 
 ## More Information
@@ -150,6 +153,16 @@ Registers a TUI plugin that renders a `sidebar_content` panel at order 145, show
 | **OpenCode Go** | 5h, Weekly, Monthly + spend | Personal API key (or legacy session cookie) |
 
 Traffic-light colors: ≥50% `theme.success` (green), 25-49% `theme.warning` (orange), <25% `theme.error` (red).
+
+Every card shows the age of its reading, e.g. `read 2m ago`. A reading is stale when it is older than three `refreshIntervalMs` periods (three minutes at the default 60 s), or when the latest fetch failed and the previous reading is still on screen. The age line then turns amber:
+
+```
+⚠ read 14m ago · run /connect, choose ChatGPT
+```
+
+The action reuses the existing setup hint for credential failures; network failures say that the panel retries automatically. A 30 s UI clock updates these labels without making API requests. If a quota window reset after the reading was taken, the card adds `window reset since this reading` so an old percentage is not mistaken for current data.
+
+The last snapshot is cached in `$XDG_CACHE_HOME/opencode-quota-extended/last-snapshot.json` (`~/.cache/...` when unset; mode `600`). It contains quota numbers only, never credentials, and keeps stale readings visible across restarts. Deleting it is safe.
 
 ### Authentication
 
@@ -202,6 +215,7 @@ You can also use `OPENCODE_GO_API_KEY` instead of a file.
 - **Panel doesn't appear**: `grep '@arandevcode/opencode-quota-extended' ~/.local/share/opencode/log/*.log`
 - **OpenCode Go shows "skipped"**: confirm the sidecar file or `OPENCODE_GO_API_KEY` is set
 - **OpenCode Go shows 401/403**: the key is invalid, expired or lacks permissions; create a personal **All** key (service-account keys cannot read billing)
+- **Data looks old or the age line is amber**: the panel is showing the last successful reading. Check the network or credentials; the hint on the line says what to do. To force a clean slate, delete `$XDG_CACHE_HOME/opencode-quota-extended/last-snapshot.json`
 - **Old `@opentui/solid` pinning bug**: use `^0.4.1 || ^0.5.0` and clean-install (`rm -rf node_modules && npm ci`)
 
 ### Development
@@ -235,7 +249,7 @@ src/
   server.ts           # Server plugin (minimal, no tools)
   tui.tsx             # TUI plugin: sidebar_content slot
   config/             # defaults, schema, loader
-  lib/                # types, auth, http, formatting, credential resolver
+  lib/                # types, auth, http, formatting, freshness, snapshot cache
   providers/          # openai.ts, copilot.ts, opencode-go.ts, registry.ts
   ui/                 # SidebarPanel, cards, progress-bar
 tests/                # vitest unit tests
