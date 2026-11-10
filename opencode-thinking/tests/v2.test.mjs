@@ -5,8 +5,9 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import { parseArgs, thinkingVisualV2 as thinkingServerV2 } from "../dist/server.js"
-import { createThinkingV2Api } from "../dist/v2.js"
+import { collectV2Snapshot, createThinkingV2Api, startV2Pump } from "../dist/v2.js"
 import { thinkingVisualV2 } from "../dist/tui.js"
+import { computeStatus } from "../dist/state.js"
 
 test("parseArgs accepts the documented modes", () => {
   assert.deepEqual(parseArgs("a"), { a: true, b: false })
@@ -36,7 +37,7 @@ test("V2 command transform writes the state file", async () => {
   }
 })
 
-test("V2 TUI adapter maps slots and cleans up", async () => {
+test("V2 TUI adapter maps slots and forwards every session", async () => {
   const slots = []
   let listener
   const cleanups = []
@@ -51,6 +52,7 @@ test("V2 TUI adapter maps slots and cleans up", async () => {
   )
 
   assert.equal(api.theme.current.text, "#fff")
+  assert.equal(api.theme.current.warning, "#fa0")
   api.slots.register({
     slots: {
       prompt_bar: () => "bar",
@@ -61,67 +63,125 @@ test("V2 TUI adapter maps slots and cleans up", async () => {
   assert.deepEqual(slots.map((slot) => slot.append ?? slot.before), ["session.composer.top", "home.footer.status", "sidebar.footer"])
 
   const statuses = []
-  api.event.on("session.status", (event) => statuses.push(event.properties.status.type))
+  const created = []
+  let pumps = 0
+  api.__thinkingPumpNow = () => { pumps += 1 }
+  api.event.on("session.status", (event) => statuses.push([event.properties.sessionID, event.properties.status.type]))
+  api.event.on("session.created", (event) => created.push(event.properties.info))
   listener?.({ details: { type: "session.execution.started", data: { sessionID: "ses_1" } } })
   listener?.({ details: { type: "session.execution.succeeded", data: { sessionID: "ses_1" } } })
   listener?.({ details: { type: "session.execution.started", data: { sessionID: "ses_2" } } })
   listener?.({ details: { type: "session.execution.interrupted", data: { sessionID: "ses_2" } } })
-  assert.deepEqual(statuses, ["busy", "idle", "busy", "idle"])
+  listener?.({ details: { type: "session.created", data: { sessionID: "ses_child", parentID: "ses_1" } } })
+  assert.deepEqual(statuses, [
+    ["ses_1", "busy"], ["ses_1", "idle"],
+    ["ses_2", "busy"], ["ses_2", "idle"],
+  ])
+  assert.equal(created[0].id, "ses_child")
+  assert.equal(created[0].parentID, "ses_1")
+  assert.ok(pumps >= 5)
   assert.ok(cleanups.length >= 1)
 })
 
-test("V2 TUI adapter only reacts to the focused session", async () => {
-  const slots = []
-  let listener
-  let route = { type: "home" }
-  const statuses = []
-  const api = createThinkingV2Api(
-    {
-      data: {
-        listen: (fn) => { listener = fn; return () => {} },
-        session: { status: (sessionID) => (sessionID === "ses_running" ? "running" : "idle") },
+test("V2 snapshot includes the focused tree and live shells as pending work", () => {
+  let shellLocation
+  const context = {
+    data: {
+      session: {
+        list: () => [
+          { id: "root", parentID: undefined, location: { directory: "/work/project" } },
+          { id: "child", parentID: "root" },
+          { id: "other-root", parentID: undefined, location: { directory: "/work/other" } },
+        ],
+        get: (id) => ({
+          id,
+          parentID: id === "child" ? "root" : undefined,
+          location: id === "root" ? { directory: "/work/project" } : undefined,
+        }),
+        family: () => ["root", "child"],
+        status: (id) => (id === "child" ? "running" : "idle"),
       },
-      ui: {
-        router: { current: () => route },
-        slot: (input) => { slots.push(input); return () => {} },
+      shell: {
+        list: (location) => {
+          shellLocation = location
+          return [
+            { id: "sh-bg", status: "running", metadata: { sessionID: "root" } },
+            { id: "sh-child", status: "running", metadata: { sessionID: "child" } },
+            { id: "sh-other", status: "running", metadata: { sessionID: "other-root" } },
+            { id: "sh-done", status: "exited", metadata: { sessionID: "root" } },
+            { id: "sh-anon", status: "running", metadata: {} },
+          ]
+        },
+      },
+      location: { default: () => ({ directory: "/host-default" }) },
+    },
+  }
+  const snapshot = collectV2Snapshot(context, "root")
+  assert.deepEqual(snapshot.sessions.map((session) => session.id).sort(), ["child", "root"])
+  assert.equal(snapshot.sessions.find((session) => session.id === "child").active, true)
+  assert.deepEqual(snapshot.tasks.map((task) => task.id).sort(), ["sh-bg", "sh-child"])
+  assert.deepEqual(shellLocation, { directory: "/work/project" })
+  assert.equal(computeStatus({ focus: "root", ...snapshot }).mode, "working")
+  assert.deepEqual(collectV2Snapshot(context, undefined), { sessions: [], tasks: [] })
+})
+
+test("V2 snapshot yields WAITING · TASK when the turn and subagents are done", () => {
+  const context = {
+    data: {
+      session: {
+        list: () => [{ id: "root", parentID: undefined }],
+        get: (id) => ({ id }),
+        family: () => ["root"],
+        status: () => "idle",
+      },
+      shell: {
+        list: () => [
+          { id: "sh-bg", status: "running", metadata: { sessionID: "root" } },
+          { id: "sh-bg-2", status: "running", metadata: { sessionID: "root" } },
+        ],
       },
     },
-    [],
-  )
-  api.slots.register({
-    slots: {
-      prompt_bar: () => "bar",
-      home_prompt: () => "home",
-      sidebar_title: () => "side",
-    },
+  }
+  const snapshot = collectV2Snapshot(context, "root")
+  assert.deepEqual(computeStatus({ focus: "root", ...snapshot }), {
+    mode: "waiting",
+    waiting: "2 TASKS",
+    label: "WAITING · 2 TASKS",
   })
-  api.event.on("session.status", (event) => statuses.push(event.properties.status.type))
+})
 
-  // On home there is no focused session: background activity is ignored.
-  listener?.({ details: { type: "session.execution.started", data: { sessionID: "ses_other" } } })
-  assert.deepEqual(statuses, [])
+test("V2 pump pushes snapshots and focus into the shared state", () => {
+  const cleanups = []
+  const received = { sessions: [], tasks: [], focus: [] }
+  const status = { root: "running" }
+  const context = {
+    data: {
+      listen: () => () => {},
+      session: {
+        list: () => [{ id: "root", parentID: undefined }],
+        get: (id) => ({ id }),
+        family: () => ["root"],
+        status: (id) => status[id] ?? "idle",
+        sync: async () => {},
+      },
+      shell: { list: () => [] },
+    },
+    ui: { router: { current: () => ({ type: "session", sessionID: "root" }) } },
+  }
+  const api = {
+    __thinkingSetSessions: (sessions) => { received.sessions.push(sessions) },
+    __thinkingSetTasks: (tasks) => { received.tasks.push(tasks) },
+    __thinkingSetFocus: (focus) => { received.focus.push(focus) },
+    __thinkingGetFocus: () => "root",
+  }
+  startV2Pump(context, api, cleanups)
+  assert.equal(received.focus.at(-1), "root")
+  assert.equal(received.sessions.at(-1)[0].active, true)
 
-  // Focusing a session syncs with its current status (idle here).
-  route = { type: "session", sessionID: "ses_focus" }
-  const promptSlot = slots.find((slot) => slot.append === "session.composer.top")
-  promptSlot.render({ sessionID: "ses_focus" })
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  assert.deepEqual(statuses, ["idle"])
-
-  // Background sessions must not turn the indicator on or off.
-  listener?.({ details: { type: "session.execution.started", data: { sessionID: "ses_other" } } })
-  assert.deepEqual(statuses, ["idle"])
-  listener?.({ details: { type: "session.execution.started", data: { sessionID: "ses_focus" } } })
-  listener?.({ details: { type: "session.execution.succeeded", data: { sessionID: "ses_other" } } })
-  listener?.({ details: { type: "session.execution.succeeded", data: { sessionID: "ses_focus" } } })
-  assert.deepEqual(statuses, ["idle", "busy", "idle"])
-
-  // Switching to an already-running session lights it up immediately.
-  route = { type: "session", sessionID: "ses_running" }
-  const sidebarSlot = slots.find((slot) => (slot.append ?? slot.before) === "sidebar.footer")
-  sidebarSlot.render({ sessionID: "ses_running" })
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  assert.equal(statuses.at(-1), "busy")
+  status.root = "idle"
+  api.__thinkingPumpNow()
+  assert.equal(received.sessions.at(-1)[0].active, false)
+  for (const cleanup of cleanups.reverse()) cleanup()
 })
 
 test("V2 TUI adapter accepts unwrapped events and ignores unknown ones", () => {
@@ -139,14 +199,28 @@ test("V2 TUI adapter accepts unwrapped events and ignores unknown ones", () => {
 })
 
 test("V2 TUI setup returns a cleanup", async () => {
-  const cleanups = []
+  let listener
   const context = {
-    data: { listen: () => () => {} },
-    ui: { slot: () => () => {} },
+    data: {
+      listen: (fn) => { listener = fn; return () => {} },
+      session: {
+        list: () => [{ id: "root" }],
+        get: (id) => ({ id }),
+        family: () => ["root"],
+        status: () => "idle",
+        sync: async () => {},
+      },
+      shell: { list: () => [] },
+    },
+    ui: {
+      slot: () => () => {},
+      router: { current: () => ({ type: "home" }) },
+    },
     keymap: { layer: () => {} },
     theme: {},
   }
   const cleanup = await thinkingVisualV2(context)
   assert.equal(typeof cleanup, "function")
+  assert.equal(typeof listener, "function")
   cleanup()
 })

@@ -20,7 +20,7 @@ Suite de plugins para [OpenCode](https://opencode.ai).
 
 | Plugin | Tipo | npm | Versión | Descripción |
 |--------|------|-----|---------|-------------|
-| opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.3.0 | Indicadores animados de pensamiento con borde arcoíris e IDLE según el tema |
+| opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.4.0 | Banda de estado WORKING / WAITING / IDLE con subagentes, borde y sidebar según el tema |
 | opencode-quota-extended | `🧩 plugin` | `@arandevcode/opencode-quota-extended` | 0.3.2 | Cuota, gasto y balance de OpenCode Go vía API key personal, con tarjetas por ventana + CLI |
 
 ## Instalación
@@ -100,11 +100,11 @@ Reinicia OpenCode.
 Reinicia OpenCode. **Nota:** ninguno de los dos plugins toca `~/.local/share/opencode/auth.json` — tus tokens de auth nunca se modifican.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-thinking/images/demo.gif" alt="Thinking borde arcoíris demo" width="420">
+  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-thinking/images/opencode-thinking-v2.png" alt="Banda de estado WORKING y sidebar en una sesión de OpenCode" width="420">
   &nbsp;&nbsp;&nbsp;
   <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Barra lateral cuota" width="420">
   <br>
-  <sub><em>thinking demo</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>quota sidebar</em></sub>
+  <sub><em>estados de thinking</em> &nbsp;&nbsp;&nbsp;&nbsp; <em>quota sidebar</em></sub>
 </p>
 
 ## 🧭 Filosofía

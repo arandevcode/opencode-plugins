@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 — 2026-11-10
+- Fix: the band stayed on `IDLE` while subagents were running. `WORKING` now covers the main turn **and every subagent**, foreground or background, nested at any depth.
+- New: `WAITING · TASK` / `WAITING · 2 TASKS` in amber on OpenCode 2 when the turn is over but a background shell is still alive. OpenCode 1.x has no reliable plugin-facing signal for this, so it goes `WORKING` → `IDLE` there.
+- New: focused-conversation tree tracking. Sessions from another conversation no longer influence the band; this replaces the 0.3.2 rule that ignored all subagents.
+- New: 400 ms settle window when leaving `WORKING`, so a foreground subagent handoff or a background task waking its parent never flashes `IDLE`/`WAITING`.
+- Change: `WORKING` cycles `theme.primary` → `theme.accent` → `theme.success` → `theme.error`; `WAITING` is solid `theme.warning` and `IDLE` is solid `theme.success`. Warning is reserved for waiting so it cannot be confused with the working animation.
+- Change: a shared state machine (`src/state.ts`) now computes the state for both OpenCode generations, with v1 event/tree and v2 store/shell adapters.
+- Fix: the OpenCode 2 sidebar border now finds the right-anchored pane at any width, keeps its decoration through transient reflows, and no longer flickers or changes the root padding. Narrow terminals hide the sidebar, so there is nothing to frame.
+- Docs: new states table, compatibility details, update instructions and simulated screenshots/GIFs with made-up data.
+
 ## 0.3.2 — 2026-11-06
 - Fix: on OpenCode 2 the WORKING/IDLE indicator stayed on IDLE while the model was running. The TUI event listener receives `{ details }` and the adapter read `event.type` from the wrapper, so `session.execution.started` never matched. The adapter now unwraps the envelope (and still accepts unwrapped events).
 - Fix: treat `session.execution.interrupted` as idle, alongside `succeeded` and `failed`.

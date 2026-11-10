@@ -21,7 +21,7 @@ Suite of plugins for [OpenCode](https://opencode.ai).
 
 | Plugin | Type | npm | Version | Description |
 |--------|------|-----|---------|-------------|
-| opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.3.0 | Animated thinking indicators with theme-aware rainbow border + IDLE state |
+| opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.4.0 | WORKING / WAITING / IDLE status band with subagent-aware state, theme-aware border + sidebar |
 | opencode-quota-extended | `🧩 plugin` | `@arandevcode/opencode-quota-extended` | 0.3.2 | OpenCode Go quota/spend/balance via personal API key, with per-window cards + CLI |
 
 ## Install
@@ -101,11 +101,11 @@ Restart OpenCode.
 Restart OpenCode. **Note:** neither plugin ever touches `~/.local/share/opencode/auth.json` — your auth tokens are never modified.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-thinking/images/demo.gif" alt="Thinking rainbow border demo" width="420">
+  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-thinking/images/opencode-thinking-v2.png" alt="WORKING status band and sidebar in an OpenCode session" width="420">
   &nbsp;&nbsp;&nbsp;
   <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Quota sidebar" width="420">
   <br>
-  <sub><em>thinking demo</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>quota sidebar</em></sub>
+  <sub><em>thinking states</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>quota sidebar</em></sub>
 </p>
 
 ## 🧭 Philosophy
