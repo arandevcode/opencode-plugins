@@ -44,6 +44,7 @@ vi.mock("../src/providers/opencode-go.js", () => ({
 
 vi.mock("../src/lib/opencode-go-config.js", () => ({
   discoverOpenCodeGoInstances: async () => [],
+  resolveOpenCodeGoInstanceCached: async () => ({ state: "none" }),
 }));
 
 import { collectSnapshot } from "../src/providers/registry.js";

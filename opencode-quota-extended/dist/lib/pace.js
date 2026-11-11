@@ -13,6 +13,18 @@ export function windowDurationMs(window) {
     return null;
 }
 /**
+ * Percentage of the window that is still ahead, from 0 (about to reset) to
+ * 100 (just started). This is the position of the pace tick on the bar: if
+ * the filled quota matches this value, usage is exactly on pace.
+ */
+export function paceLinePercent(window, now = Date.now()) {
+    const duration = windowDurationMs(window);
+    const resetAt = window.resetTimeIso ? Date.parse(window.resetTimeIso) : Number.NaN;
+    if (duration == null || !Number.isFinite(resetAt))
+        return null;
+    return clampPercent(((resetAt - now) / duration) * 100);
+}
+/**
  * Compare remaining quota to the time left in the window. Returns null when the
  * schedule or reset time is unknown, or there is no reading to compare.
  */
@@ -42,5 +54,13 @@ export function formatPace(window, now = Date.now()) {
     return gap
         ? `${word} ${sign}${deltaPercent}% · ${gap}`
         : `${word} ${sign}${deltaPercent}%`;
+}
+/**
+ * Compact UI variant. The card already colors buffer green and burn red, so
+ * the words "margin"/"ahead" can be dropped to keep the spend row on one line
+ * in a narrow sidebar.
+ */
+export function formatPaceCompact(window, now = Date.now()) {
+    return formatPace(window, now).replace(/^(?:margin|ahead) /, "");
 }
 //# sourceMappingURL=pace.js.map

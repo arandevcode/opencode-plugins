@@ -27,6 +27,15 @@ export function formatBalance(balance: ProviderBalance | undefined): string {
   return parts.join(" · ");
 }
 
+/**
+ * Short header variant: just the dollar amount. The verbose "credit · draws on
+ * credits" suffix makes long account names wrap in the narrow sidebar.
+ */
+export function formatBalanceCompact(balance: ProviderBalance | undefined): string {
+  const usd = balanceUsd(balance);
+  return usd === null ? "" : `$${usd.toFixed(2)}`;
+}
+
 /** Dollars from a microcents decimal string, using cents precision. */
 function microCentsUsd(raw: string | undefined): number | null {
   if (typeof raw !== "string" || raw.trim() === "") return null;

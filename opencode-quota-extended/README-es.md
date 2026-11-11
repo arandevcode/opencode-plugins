@@ -13,6 +13,7 @@
 Tarjetas de uso de cuota para la barra lateral TUI — barras de progreso por ventana con colores de semáforo para OpenAI, GitHub Copilot y OpenCode Go.
 
 - Barra de progreso para cada ventana de cuota (5h móvil, semanal, mensual, code review...)
+- Una marca amarilla de ritmo indica cuánto queda por delante de la ventana, para comparar de un vistazo la cuota restante con el reloj
 - Muestra cuándo se reinicia — tiempo restante y fecha exacta
 - Indicador de salud por colores (verde = ok, naranja = advertencia, rojo = crítico)
 - Antigüedad de cada lectura, aviso ámbar cuando los datos están caducados y marca cuando una ventana se reseteó después de la lectura
@@ -138,7 +139,7 @@ npm run quota                 # desde el directorio del repo
 
 Colores de semáforo: verde (ok), naranja (advertencia), rojo (error). Todos los colores vienen del tema activo de OpenCode — se adaptan automáticamente a la paleta del usuario.
 
-Cada proveedor muestra también `read Xm ago`. Si la última consulta falla, la CLI conserva la última lectura correcta y la marca como caducada en vez de eliminar la tarjeta.
+Cada proveedor muestra también la antigüedad de su lectura (`just now`, `2m ago`). Si la última consulta falla, la CLI conserva la última lectura correcta y la marca como caducada en vez de eliminar la tarjeta.
 
 ## Configuración
 
@@ -154,7 +155,7 @@ Archivo sidecar opcional en `~/.config/opencode/opencode-quota-extended.json`:
 
 ### Cómo funciona
 
-Registra un plugin TUI que renderiza un panel `sidebar_content` en la posición 145, mostrando tarjetas de cuota para cada proveedor activo. Cada proveedor obtiene datos de cuota independientemente desde su propia API.
+Registra un plugin TUI que renderiza un panel `sidebar_content` en la posición 145, mostrando tarjetas de cuota para cada proveedor activo, más una línea `sidebar_footer` con la versión de OpenCode del host. Cada proveedor obtiene datos de cuota independientemente desde su propia API.
 
 | Proveedor | Ventanas | Fuente de autenticación |
 |---|---|---|
@@ -164,11 +165,14 @@ Registra un plugin TUI que renderiza un panel `sidebar_content` en la posición 
 
 Colores de semáforo: ≥50% `theme.success` (verde), 25-49% `theme.warning` (naranja), <25% `theme.error` (rojo).
 
-Cada tarjeta muestra la antigüedad de su lectura, p. ej. `read 2m ago`. Una lectura está caducada cuando supera tres periodos de `refreshIntervalMs` (tres minutos con el intervalo por defecto de 60 s), o cuando la última consulta falló y sigue en pantalla la lectura anterior. La línea de antigüedad pasa a ámbar:
+Cada tarjeta muestra la antigüedad de su lectura en la misma línea que el nombre del proveedor, p. ej. `2m ago`. Una lectura está caducada cuando supera tres periodos de `refreshIntervalMs` (tres minutos con el intervalo por defecto de 60 s), o cuando la última consulta falló y sigue en pantalla la lectura anterior. La antigüedad pasa a ámbar:
 
 ```
-⚠ read 14m ago · run /connect, choose ChatGPT
+⚠ 14m ago
+run /connect, choose ChatGPT
 ```
+
+Las tarjetas se adaptan a la sesión. El proveedor que usa la sesión actual empieza desplegado y lleva un carril izquierdo y un punto amarillos; el resto se contrae a dos líneas: nombre y antigüedad, y debajo un resumen compacto de ventanas (`5h 98% · wk 80% · mo 78%`) con el saldo. Así el nombre tiene más sitio; los proveedores conocidos se abrevian en sidebars estrechas (`GO (aRaN)`, `Copilot (Individual)`). Todas las tarjetas reservan las mismas columnas de borde, y la activa se enmarca con una línea amarilla sólida redondeada y un poco de espacio interior horizontal, así las filas activas e inactivas quedan alineadas. Haz clic en la cabecera (o en su línea de resumen) para desplegar o contraer. Cada sesión recuerda sus tarjetas abiertas, así que al cambiar de pestaña recuperas la vista que dejaste. Cuando la sesión usa OpenCode Go, la cuenta con nombre activa según `opencode-go-active.json` es la resaltada. El pie de la sidebar también muestra la versión de OpenCode del host (`OpenCode 2.2.5`).
 
 La acción reutiliza el hint de configuración existente para fallos de credenciales; en fallos de red indica que el panel reintenta automáticamente. Un reloj de UI de 30 s actualiza estas etiquetas sin hacer peticiones a las APIs. Si una ventana de cuota se reseteó después de tomar la lectura, la tarjeta añade `window reset since this reading` para que un porcentaje antiguo no se confunda con datos actuales.
 
@@ -194,7 +198,7 @@ Crea `~/.config/opencode/opencode-quota/opencode-go.json`:
 
 La key se guarda con permisos `600` y solo se envía a `opencode.ai`. Una key **All** muestra cuota, gasto y balance. Una key `read` no sirve para este plugin: no puede llamar a `go/status`.
 
-**Múltiples workspaces/cuentas:** cualquier archivo `opencode-go-<sufijo>.json` en el mismo directorio añade una sección extra `Opencode GO (<sufijo>)` (p. ej. `opencode-go-work.json` → **Opencode GO (work)**). El `opencode-go.json` base siempre se muestra como **OpenCode Go**. Los archivos `opencode-go-<sufijo>-key.json` que mantiene el switch de cuentas los ignora el plugin de cuota.
+**Múltiples workspaces/cuentas:** cualquier archivo `opencode-go-<sufijo>.json` en el mismo directorio añade una sección extra `Opencode GO (<sufijo>)` (p. ej. `opencode-go-work.json` → **Opencode GO (work)**). El `opencode-go.json` base se muestra como **OpenCode Go** cuando está configurado; si no existe, se oculta mientras haya cuentas con nombre, para no mostrar un aviso de configuración de una cuenta que decidiste no crear. Los archivos `opencode-go-<sufijo>-key.json` que mantiene el switch de cuentas los ignora el plugin de cuota.
 
 ```sh
 # p. ej. una segunda cuenta
@@ -258,7 +262,7 @@ La barra de ratio antigua con `flexGrow` y los hex hardcodeados (`#6b8e23`, `#ff
 src/
   index.ts            # Plugin module (entrada server)
   server.ts           # Plugin server (mínimo, sin herramientas)
-  tui.tsx             # Plugin TUI: slot sidebar_content
+  tui.tsx             # Plugin TUI: slots sidebar_content + sidebar_footer
   config/             # defaults, schema, loader
   lib/                # types, auth, http, formatting, freshness, caché de instantáneas
   providers/          # openai.ts, copilot.ts, opencode-go.ts, registry.ts

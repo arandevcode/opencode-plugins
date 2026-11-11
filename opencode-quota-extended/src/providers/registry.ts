@@ -19,7 +19,10 @@ import {
   createOpenCodeGoProvider,
   opencodeGoProvider,
 } from "./opencode-go.js";
-import { discoverOpenCodeGoInstances } from "../lib/opencode-go-config.js";
+import {
+  discoverOpenCodeGoInstances,
+  resolveOpenCodeGoInstanceCached,
+} from "../lib/opencode-go-config.js";
 import { isCredentialError } from "../lib/freshness.js";
 
 const ALL_PROVIDERS: Provider[] = [
@@ -121,12 +124,21 @@ export async function collectSnapshot(
   for (const id of config.enabledProviders) {
     const provider = getProvider(id);
     if (!provider) continue;
-    defs.push({ provider });
-    if (id === "opencode-go") {
-      const extras = await discoverOpenCodeGoInstances();
-      for (const instance of extras) {
-        defs.push({ provider: createOpenCodeGoProvider(instance) });
-      }
+    const extras = id === "opencode-go" ? await discoverOpenCodeGoInstances() : [];
+
+    // When named OpenCode Go accounts exist, the default "opencode-go"
+    // instance is only shown if it is configured itself. Otherwise it would
+    // render a "no API key / set OPENCODE_GO_API_KEY" warning even though the
+    // user deliberately configured accounts through opencode-go-<name>.json.
+    const unconfiguredBase =
+      id === "opencode-go" &&
+      extras.length > 0 &&
+      (await resolveOpenCodeGoInstanceCached("opencode-go")).state === "none";
+
+    if (!unconfiguredBase) defs.push({ provider });
+
+    for (const instance of extras) {
+      defs.push({ provider: createOpenCodeGoProvider(instance) });
     }
   }
 

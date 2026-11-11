@@ -19,10 +19,22 @@ export interface QuotaPaceReading {
 /** Window length when the id/label names a known schedule, else null. */
 export declare function windowDurationMs(window: Pick<QuotaWindow, "id" | "label">): number | null;
 /**
+ * Percentage of the window that is still ahead, from 0 (about to reset) to
+ * 100 (just started). This is the position of the pace tick on the bar: if
+ * the filled quota matches this value, usage is exactly on pace.
+ */
+export declare function paceLinePercent(window: QuotaWindow, now?: number): number | null;
+/**
  * Compare remaining quota to the time left in the window. Returns null when the
  * schedule or reset time is unknown, or there is no reading to compare.
  */
 export declare function quotaPace(window: QuotaWindow, now?: number): QuotaPaceReading | null;
 /** One short line: "margin +6% · 3h 12m", "ahead -6% · 1d 2h" or "on pace". */
 export declare function formatPace(window: QuotaWindow, now?: number): string;
+/**
+ * Compact UI variant. The card already colors buffer green and burn red, so
+ * the words "margin"/"ahead" can be dropped to keep the spend row on one line
+ * in a narrow sidebar.
+ */
+export declare function formatPaceCompact(window: QuotaWindow, now?: number): string;
 //# sourceMappingURL=pace.d.ts.map

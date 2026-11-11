@@ -9,6 +9,7 @@ const EXTRA_PREFIX = "opencode-go-";
 const EXTRA_LABEL_PREFIX = "Opencode GO";
 const DEFAULT_ID = "opencode-go";
 const DEFAULT_LABEL = "OpenCode Go";
+const ACTIVE_FILE = "opencode-go-active.json";
 
 export type OpenCodeGoConfig =
   | { auth: "api-key"; apiKey: string }
@@ -206,6 +207,33 @@ export async function discoverOpenCodeGoInstances(): Promise<OpenCodeGoInstance[
     }
   }
   return instances;
+}
+
+/**
+ * Account name last selected by the OpenCode Go account switcher.
+ *
+ * The helper file contains no credentials, only `{ account, switchedAt,
+ * keySha256 }`, so it is safe to read for the active-card marker. It is read
+ * on demand (no cache) so switching accounts updates the sidebar quickly.
+ */
+export async function readActiveOpenCodeGoAccount(): Promise<string | undefined> {
+  for (const dir of getSidecarDirCandidates()) {
+    let raw: string;
+    try {
+      raw = await readFile(join(dir, ACTIVE_FILE), "utf8");
+    } catch {
+      continue;
+    }
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+      const account = (parsed as Record<string, unknown>).account;
+      if (typeof account === "string" && account.trim()) return account.trim();
+    } catch {
+      continue;
+    }
+  }
+  return undefined;
 }
 
 let cached: { at: number; value: OpenCodeGoConfigResolution } | null = null;

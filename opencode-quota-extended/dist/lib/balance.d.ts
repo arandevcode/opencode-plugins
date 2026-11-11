@@ -11,6 +11,11 @@ import type { ProviderBalance, QuotaWindow } from "./types.js";
 export declare function balanceUsd(balance: ProviderBalance | undefined): number | null;
 /** "$9.18 credit", plus a note when credits are drawn or auto-recharge is on. */
 export declare function formatBalance(balance: ProviderBalance | undefined): string;
+/**
+ * Short header variant: just the dollar amount. The verbose "credit · draws on
+ * credits" suffix makes long account names wrap in the narrow sidebar.
+ */
+export declare function formatBalanceCompact(balance: ProviderBalance | undefined): string;
 /** "$2.64 / $30.00" for a window that exposes both money fields. */
 export declare function formatWindowSpend(window: QuotaWindow): string;
 //# sourceMappingURL=balance.d.ts.map

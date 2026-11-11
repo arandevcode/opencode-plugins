@@ -40,8 +40,9 @@
   ],
   "scripts": {
     "clean": "node scripts/clean.mjs",
-    "build": "npm run clean && tsc && node scripts/postbuild.mjs",
-    "prepublish": "npm run build",
+    "build": "tsc && node scripts/postbuild.mjs",
+    "build:clean": "npm run clean && npm run build",
+    "prepublish": "npm run build:clean",
     "build:watch": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "quota": "node bin/quota.mjs",

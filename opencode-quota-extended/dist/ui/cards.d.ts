@@ -11,5 +11,8 @@ export declare function ProviderCards(props: {
     showOnlyMultiWindow: boolean;
     now: () => number;
     refreshIntervalMs: number;
+    active: boolean;
+    expanded: boolean;
+    onToggle: () => void;
 }): JSX.Element;
 //# sourceMappingURL=cards.d.ts.map

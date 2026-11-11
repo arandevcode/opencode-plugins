@@ -41,6 +41,14 @@ export declare function resolveOpenCodeGoInstance(id: string): Promise<OpenCodeG
  * instance descriptors (first directory with a matching file wins).
  */
 export declare function discoverOpenCodeGoInstances(): Promise<OpenCodeGoInstance[]>;
+/**
+ * Account name last selected by the OpenCode Go account switcher.
+ *
+ * The helper file contains no credentials, only `{ account, switchedAt,
+ * keySha256 }`, so it is safe to read for the active-card marker. It is read
+ * on demand (no cache) so switching accounts updates the sidebar quickly.
+ */
+export declare function readActiveOpenCodeGoAccount(): Promise<string | undefined>;
 export declare function resolveOpenCodeGoConfigCached(): Promise<OpenCodeGoConfigResolution>;
 export declare function resolveOpenCodeGoInstanceCached(id: string): Promise<OpenCodeGoConfigResolution>;
 /** Clear all cached OpenCode Go config resolutions (used by tests). */

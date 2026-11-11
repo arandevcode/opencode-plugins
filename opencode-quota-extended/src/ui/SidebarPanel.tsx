@@ -5,6 +5,7 @@ import type { JSX } from "@opentui/solid";
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui";
 import type { CardsPluginConfig } from "../config/defaults.js";
 import type { CardsSnapshot } from "../lib/types.js";
+import type { ExpansionState } from "./expansion.js";
 import { ProviderCards } from "./cards.js";
 
 export function SidebarPanel(props: {
@@ -13,6 +14,9 @@ export function SidebarPanel(props: {
   snapshot: () => CardsSnapshot;
   now: () => number;
   refreshIntervalMs: number;
+  sessionId: string;
+  activeProviderId: () => string | undefined;
+  expansion: ExpansionState;
 }): JSX.Element {
   const theme = () => props.api.theme.current;
   const titleColor = () => theme().text;
@@ -39,6 +43,19 @@ export function SidebarPanel(props: {
               showOnlyMultiWindow={props.config.showOnlyMultiWindow}
               now={props.now}
               refreshIntervalMs={props.refreshIntervalMs}
+              active={props.activeProviderId() === p.id}
+              expanded={props.expansion.isExpanded(
+                props.sessionId,
+                p.id,
+                props.activeProviderId(),
+              )}
+              onToggle={() =>
+                props.expansion.toggle(
+                  props.sessionId,
+                  p.id,
+                  props.activeProviderId(),
+                )
+              }
             />
           )}
         </For>

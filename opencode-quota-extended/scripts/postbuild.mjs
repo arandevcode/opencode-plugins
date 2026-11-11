@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFile, readdir, readFile, rm, mkdir } from "node:fs/promises";
+import { copyFile, readdir, readFile, rename, rm, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,7 +45,12 @@ async function copyTsxRecursive(srcDir, distDir, rel = "") {
     } else if (e.name.endsWith(".tsx")) {
       await rm(dp.replace(/\.tsx$/, ".js"), { force: true });
       await rm(dp.replace(/\.tsx$/, ".js.map"), { force: true });
-      await copyFile(sp, dp);
+      // Replace atomically: the TUI plugin watcher may read this file while a
+      // build is running. A plain copy truncates it first and can make the
+      // plugin look broken for a moment.
+      const tmp = `${dp}.tmp-${process.pid}`;
+      await copyFile(sp, tmp);
+      await rename(tmp, dp);
       console.log(`[postbuild] copied ${rel}${e.name} (uncompiled, runtime will transform)`);
     }
   }

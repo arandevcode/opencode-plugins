@@ -43,6 +43,27 @@ afterEach(async () => {
   await rm(dir, { recursive: true, force: true });
 });
 
+describe("readActiveOpenCodeGoAccount", () => {
+  it("reads the account name from the sidecar helper file", async () => {
+    await writeFile(
+      join(dir, "opencode-quota", "opencode-go-active.json"),
+      JSON.stringify({ account: "aRaN", switchedAt: "2026-11-08T12:43:51+01:00" }),
+    );
+
+    expect(await mod.readActiveOpenCodeGoAccount()).toBe("aRaN");
+  });
+
+  it("returns undefined when the file is missing or malformed", async () => {
+    expect(await mod.readActiveOpenCodeGoAccount()).toBeUndefined();
+
+    await writeFile(
+      join(dir, "opencode-quota", "opencode-go-active.json"),
+      JSON.stringify({ switchedAt: "2026-11-08T12:43:51+01:00" }),
+    );
+    expect(await mod.readActiveOpenCodeGoAccount()).toBeUndefined();
+  });
+});
+
 describe("discoverOpenCodeGoInstances", () => {
   it("returns an instance per opencode-go-<suffix>.json file", async () => {
     await writeFile(

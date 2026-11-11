@@ -1,35 +1,72 @@
+type ColorToken = unknown;
 export type V2Theme = {
     text?: {
-        base?: string;
-        muted?: string;
+        base?: ColorToken;
+        muted?: ColorToken;
+        feedback?: {
+            success?: {
+                base?: ColorToken;
+            };
+            warning?: {
+                base?: ColorToken;
+            };
+            error?: {
+                base?: ColorToken;
+            };
+            info?: {
+                base?: ColorToken;
+            };
+        };
+        action?: {
+            primary?: {
+                base?: ColorToken;
+            };
+        };
     } | string;
     accent?: {
-        base?: string;
+        base?: ColorToken;
     } | string;
     background?: {
-        panel?: string;
-        element?: string;
+        raised?: {
+            base?: ColorToken;
+            high?: ColorToken;
+        };
+        overlay?: {
+            base?: ColorToken;
+        };
+        panel?: ColorToken;
+        element?: ColorToken;
     };
     status?: {
-        success?: string;
-        warning?: string;
-        danger?: string;
-        error?: string;
+        success?: ColorToken;
+        warning?: ColorToken;
+        danger?: ColorToken;
+        error?: ColorToken;
     };
-    primary?: string;
-    success?: string;
-    warning?: string;
-    error?: string;
-    textMuted?: string;
-    backgroundPanel?: string;
-    backgroundElement?: string;
+    primary?: ColorToken;
+    success?: ColorToken;
+    warning?: ColorToken;
+    error?: ColorToken;
+    textMuted?: ColorToken;
+    backgroundPanel?: ColorToken;
+    backgroundElement?: ColorToken;
 };
 export type V2Context = {
+    app?: {
+        version?: string;
+    };
     theme?: V2Theme;
     options?: Record<string, unknown>;
     client?: {
         credential?: {
             list?: () => Promise<unknown>;
+        };
+        session?: {
+            get?: (input: unknown) => Promise<unknown>;
+            messages?: (input: unknown) => Promise<unknown>;
+            message?: {
+                list?: (input: unknown) => unknown;
+            };
         };
     };
     data?: {
@@ -45,17 +82,16 @@ export type V2Context = {
         }) => () => void;
     };
 };
-export declare function asColor(value: unknown, fallback: string): string;
 export declare function v2Theme(theme?: V2Theme): {
-    text: string;
-    textMuted: string;
-    primary: string;
-    accent: string;
-    success: string;
-    warning: string;
-    error: string;
-    backgroundPanel: string;
-    backgroundElement: string;
+    text: unknown;
+    textMuted: unknown;
+    primary: unknown;
+    accent: unknown;
+    success: unknown;
+    warning: unknown;
+    error: unknown;
+    backgroundPanel: unknown;
+    backgroundElement: unknown;
 };
 /**
  * Adapt a V2 CLI plugin context to the V1 TUI API the cards already use.
@@ -63,4 +99,5 @@ export declare function v2Theme(theme?: V2Theme): {
  * the existing refresh scheduler and sidebar markup stay unchanged.
  */
 export declare function createQuotaV2Api(context: V2Context, cleanups: Array<() => void>): any;
+export {};
 //# sourceMappingURL=v2.d.ts.map

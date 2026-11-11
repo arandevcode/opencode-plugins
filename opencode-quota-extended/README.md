@@ -13,6 +13,7 @@
 Quota usage cards for the TUI sidebar — per-window progress bars with traffic-light colors for OpenAI, GitHub Copilot, and OpenCode Go.
 
 - Progress bar for each quota window (5h rolling, weekly, monthly, code review...)
+- A yellow pace tick marks how much of the window is still ahead, so you can compare remaining quota against the clock at a glance
 - Shows when it resets — time remaining and exact date
 - Color-coded health indication (green = ok, orange = warning, red = critical)
 - Reading age per provider, with an amber warning when data is stale and a flag when a window reset after the reading
@@ -139,7 +140,7 @@ npm run quota                 # from the repo directory
 
 Traffic-light colors: green (ok), orange (warning), red (error). All colors come from the active OpenCode theme — they adapt to the user's palette automatically.
 
-Each provider also shows `read Xm ago`. If the last fetch failed, the CLI keeps the last successful reading and marks it as stale instead of dropping the card.
+Each provider also shows its reading age (`just now`, `2m ago`). If the last fetch failed, the CLI keeps the last successful reading and marks it as stale instead of dropping the card.
 
 ## Configuration
 
@@ -155,7 +156,7 @@ Optional sidecar at `~/.config/opencode/opencode-quota-extended.json`:
 
 ### How it works
 
-Registers a TUI plugin that renders a `sidebar_content` panel at order 145, showing quota cards for every enabled provider. Each provider fetches quota data independently from its own API.
+Registers a TUI plugin that renders a `sidebar_content` panel at order 145, showing quota cards for every enabled provider, plus a `sidebar_footer` line with the host OpenCode version. Each provider fetches quota data independently from its own API.
 
 | Provider | Windows | Auth source |
 |---|---|---|
@@ -165,11 +166,14 @@ Registers a TUI plugin that renders a `sidebar_content` panel at order 145, show
 
 Traffic-light colors: ≥50% `theme.success` (green), 25-49% `theme.warning` (orange), <25% `theme.error` (red).
 
-Every card shows the age of its reading, e.g. `read 2m ago`. A reading is stale when it is older than three `refreshIntervalMs` periods (three minutes at the default 60 s), or when the latest fetch failed and the previous reading is still on screen. The age line then turns amber:
+Every card shows the age of its reading inline with the provider name, e.g. `2m ago`. A reading is stale when it is older than three `refreshIntervalMs` periods (three minutes at the default 60 s), or when the latest fetch failed and the previous reading is still on screen. The age then turns amber:
 
 ```
-⚠ read 14m ago · run /connect, choose ChatGPT
+⚠ 14m ago
+run /connect, choose ChatGPT
 ```
+
+Cards are session-aware. The provider used by the current session starts expanded and gets a yellow left rail and bullet; the other cards collapse to two lines: the provider name and age, then a compact window summary (`5h 98% · wk 80% · mo 78%`) with the balance. Keeping the summary on its own line leaves room for the name; known providers are abbreviated in narrow sidebars (`GO (aRaN)`, `Copilot (Individual)`). Every card reserves the same border columns, and the active card is outlined with a solid rounded yellow frame and a little horizontal inner padding, so active and inactive rows line up. Click a provider header (or its summary line) to expand or collapse it. Each session remembers its own open cards, so switching tabs restores the view you left there. When the session uses OpenCode Go, the active named account from `opencode-go-active.json` is the one highlighted. The sidebar footer also shows the host OpenCode version (`OpenCode 2.2.5`).
 
 The action reuses the existing setup hint for credential failures; network failures say that the panel retries automatically. A 30 s UI clock updates these labels without making API requests. If a quota window reset after the reading was taken, the card adds `window reset since this reading` so an old percentage is not mistaken for current data.
 
@@ -195,7 +199,7 @@ Create `~/.config/opencode/opencode-quota/opencode-go.json`:
 
 The key is stored with mode `600` and is only sent to `opencode.ai`. An **All** key shows quota, dollar spend and credit balance. A `read` key is not enough for this plugin: it cannot call `go/status`.
 
-**Multiple workspaces/accounts:** any `opencode-go-<suffix>.json` file in the same directory adds an extra `Opencode GO (<suffix>)` section (e.g. `opencode-go-work.json` → **Opencode GO (work)**). The base `opencode-go.json` always renders as **OpenCode Go**. The `opencode-go-<suffix>-key.json` files maintained by the account switcher are ignored by the quota plugin.
+**Multiple workspaces/accounts:** any `opencode-go-<suffix>.json` file in the same directory adds an extra `Opencode GO (<suffix>)` section (e.g. `opencode-go-work.json` → **Opencode GO (work)**). The base `opencode-go.json` renders as **OpenCode Go** when it is configured; if it does not exist, it is hidden while named accounts are present, so no setup warning is shown for an account you deliberately did not create. The `opencode-go-<suffix>-key.json` files maintained by the account switcher are ignored by the quota plugin.
 
 ```sh
 # e.g. a second workspace
@@ -259,7 +263,7 @@ The old `flexGrow` ratio bar and the hardcoded hex values (`#6b8e23`, `#ffa500`,
 src/
   index.ts            # Plugin module (server entry)
   server.ts           # Server plugin (minimal, no tools)
-  tui.tsx             # TUI plugin: sidebar_content slot
+  tui.tsx             # TUI plugin: sidebar_content + sidebar_footer slots
   config/             # defaults, schema, loader
   lib/                # types, auth, http, formatting, freshness, snapshot cache
   providers/          # openai.ts, copilot.ts, opencode-go.ts, registry.ts

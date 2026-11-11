@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { formatPace, quotaPace, windowDurationMs } from "../src/lib/pace.js";
+import {
+  formatPace,
+  formatPaceCompact,
+  paceLinePercent,
+  quotaPace,
+  windowDurationMs,
+} from "../src/lib/pace.js";
 import type { QuotaWindow } from "../src/lib/types.js";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -63,6 +69,42 @@ describe("quotaPace", () => {
   });
 });
 
+describe("paceLinePercent", () => {
+  it("marks the share of the window still ahead", () => {
+    const now = 0;
+    const reset = new Date(now + 2 * HOUR_MS).toISOString();
+    expect(
+      paceLinePercent({ id: "5h", label: "5h", percentRemaining: 97, resetTimeIso: reset }, now),
+    ).toBe(40);
+  });
+
+  it("clamps before the window starts and after it resets", () => {
+    const now = 0;
+    expect(
+      paceLinePercent(
+        { id: "weekly", label: "Weekly", percentRemaining: 50, resetTimeIso: new Date(now + 8 * DAY_MS).toISOString() },
+        now,
+      ),
+    ).toBe(100);
+    expect(
+      paceLinePercent(
+        { id: "weekly", label: "Weekly", percentRemaining: 50, resetTimeIso: new Date(now - DAY_MS).toISOString() },
+        now,
+      ),
+    ).toBe(0);
+  });
+
+  it("returns null without a reset or a known schedule", () => {
+    expect(paceLinePercent({ id: "weekly", label: "Weekly", percentRemaining: 50 }, 0)).toBeNull();
+    expect(
+      paceLinePercent(
+        { id: "code-review", label: "Code Review", percentRemaining: 50, resetTimeIso: new Date(DAY_MS).toISOString() },
+        0,
+      ),
+    ).toBeNull();
+  });
+});
+
 describe("formatPace", () => {
   const now = 0;
 
@@ -94,5 +136,24 @@ describe("formatPace", () => {
 
   it("returns an empty string when there is nothing to compare", () => {
     expect(formatPace(window_({ percentRemaining: 80 }), now)).toBe("");
+  });
+});
+
+describe("formatPaceCompact", () => {
+  const now = 0;
+
+  it("drops the margin word that the card color already conveys", () => {
+    const reset = new Date(now + 3.5 * DAY_MS).toISOString();
+    expect(
+      formatPaceCompact(window_({ percentRemaining: 80, resetTimeIso: reset }), now),
+    ).toBe("+30% · 2d 2h");
+  });
+
+  it("keeps the level reading and empty readings unchanged", () => {
+    const reset = new Date(now + 3.5 * DAY_MS).toISOString();
+    expect(
+      formatPaceCompact(window_({ percentRemaining: 50, resetTimeIso: reset }), now),
+    ).toBe("on pace");
+    expect(formatPaceCompact(window_({ percentRemaining: 80 }), now)).toBe("");
   });
 });

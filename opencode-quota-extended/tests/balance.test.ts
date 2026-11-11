@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 
-import { balanceUsd, formatBalance, formatWindowSpend } from "../src/lib/balance.js";
+import {
+  balanceUsd,
+  formatBalance,
+  formatBalanceCompact,
+  formatWindowSpend,
+} from "../src/lib/balance.js";
 import type { ProviderBalance } from "../src/lib/types.js";
 
 function balance_(over: Partial<ProviderBalance>): ProviderBalance {
@@ -56,6 +61,28 @@ describe("formatBalance", () => {
         balance_({ availableMicroCents: "250000000", useBalance: false, autoRecharge: { enabled: false } }),
       ),
     ).toBe("$2.50 credit");
+  });
+});
+
+describe("formatBalanceCompact", () => {
+  it("is empty without a balance", () => {
+    expect(formatBalanceCompact(undefined)).toBe("");
+  });
+
+  it("renders only the dollar amount for a plain balance", () => {
+    expect(formatBalanceCompact(balance_({ availableMicroCents: "918000000" }))).toBe("$9.18");
+  });
+
+  it("stays compact when credits or auto-recharge are enabled", () => {
+    expect(
+      formatBalanceCompact(
+        balance_({
+          availableMicroCents: "100000000",
+          useBalance: true,
+          autoRecharge: { enabled: true },
+        }),
+      ),
+    ).toBe("$1.00");
   });
 });
 
