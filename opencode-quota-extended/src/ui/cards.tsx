@@ -361,8 +361,11 @@ function GaugeBar(props: {
   return (
     <box flexDirection="row" height={1}>
       {before ? <text fg={props.barColor}>{before}</text> : null}
+      {/* A one-cell background gap guarantees the tick stays visible even
+          when the theme uses the same color family for text and bars. */}
       <text
         fg={props.markerColor ?? props.barColor}
+        bg={props.theme.background}
         attributes={TextAttributes.BOLD}
       >
         {"┃"}
