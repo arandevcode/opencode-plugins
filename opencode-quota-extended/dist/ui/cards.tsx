@@ -295,7 +295,10 @@ function WindowRow(props: {
         theme={theme()}
         barColor={barColor()}
         markerPercent={paceLine()}
-        markerColor={theme().warning}
+        // The tick must contrast with the bar's success/warning/error fill.
+        // In some v1 themes the warning color is the same amber as the bar, so
+        // use the theme's main text color and a heavier glyph.
+        markerColor={theme().text}
       />
       <box flexDirection="row" gap={0} justifyContent="space-between">
         <text fg={barColor()}>{percent()}% left</text>
@@ -358,7 +361,12 @@ function GaugeBar(props: {
   return (
     <box flexDirection="row" height={1}>
       {before ? <text fg={props.barColor}>{before}</text> : null}
-      <text fg={props.markerColor ?? props.barColor}>{"│"}</text>
+      <text
+        fg={props.markerColor ?? props.barColor}
+        attributes={TextAttributes.BOLD}
+      >
+        {"┃"}
+      </text>
       {after ? <text fg={props.barColor}>{after}</text> : null}
     </box>
   );
