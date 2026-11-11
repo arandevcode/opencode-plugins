@@ -98,8 +98,10 @@ Update the package with the command for your generation:
 opencode plugin --global --force @arandevcode/opencode-thinking@latest
 
 # OpenCode 2
-opencode plugin add @arandevcode/opencode-thinking@latest
+opencode plugin update @arandevcode/opencode-thinking
 ```
+
+On OpenCode 2, `plugin add ...@latest` is not an update command: when the package is already configured, it appends a second entry and OpenCode loads both copies ([anomalyco/opencode#56217](https://github.com/anomalyco/opencode/issues/56217)). Use `plugin update` instead. If you already have a duplicate, remove the extra entry with `opencode plugin remove <spec>`.
 
 Then **restart the session**: a loaded plugin is not replaced in a running session. Reloading the window or the configuration is not enough. If the plugin is installed in more than one scope (for example the user scope and a project), update each one.
 

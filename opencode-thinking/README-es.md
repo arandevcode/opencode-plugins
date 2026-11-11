@@ -97,8 +97,10 @@ Actualiza el paquete con el comando de tu generación:
 opencode plugin --global --force @arandevcode/opencode-thinking@latest
 
 # OpenCode 2
-opencode plugin add @arandevcode/opencode-thinking@latest
+opencode plugin update @arandevcode/opencode-thinking
 ```
+
+En OpenCode 2, `plugin add ...@latest` no es un comando de actualización: si el paquete ya está configurado, añade una segunda entrada y OpenCode carga las dos copias ([anomalyco/opencode#56217](https://github.com/anomalyco/opencode/issues/56217)). Usa `plugin update`; si ya tienes un duplicado, elimina la entrada extra con `opencode plugin remove <spec>`.
 
 Después **reinicia la sesión**: un plugin ya cargado no se sustituye en una sesión en marcha. Recargar la ventana o la configuración no basta. Si el plugin está instalado en más de un ámbito (por ejemplo, el de usuario y el de un proyecto), actualiza cada uno.
 

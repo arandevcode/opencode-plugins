@@ -33,6 +33,8 @@ opencode plugin --global --force @arandevcode/opencode-quota-extended
 
 Both plugins work on OpenCode 1.x and OpenCode 2 (preview). On OpenCode 2 install with `opencode plugin add <package>`; each plugin's README has a compatibility table.
 
+To update on OpenCode 2, use `opencode plugin update <package>`; `opencode plugin add` is only for the first install.
+
 ## Uninstall
 
 The two plugins are independent. Pick the one(s) you want to remove and follow the steps.

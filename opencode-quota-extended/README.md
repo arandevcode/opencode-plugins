@@ -60,6 +60,17 @@ opencode plugin add @arandevcode/opencode-quota-extended
 
 On OpenCode 2 the plugin command is `plugin add` (not `plugin --global`). Support for OpenCode 2 is new; please [open an issue](https://github.com/arandevcode/opencode-plugins/issues) if something looks wrong.
 
+### Updating on OpenCode 2
+
+```sh
+opencode plugin check
+opencode plugin update
+```
+
+`opencode plugin add` is only for the first installation. Running it again with a different spec (for example `...@latest`) appends a second entry instead of updating the existing one ([anomalyco/opencode#56217](https://github.com/anomalyco/opencode/issues/56217)); OpenCode then loads both copies and one can show as `failed`. If that happens, remove the extra entry with `opencode plugin remove <duplicate-spec>` and reload.
+
+Without a target, `plugin update` updates every outdated plugin. Pass the package spec to update just one.
+
 ### Compatibility
 
 | Feature | OpenCode 1.x | OpenCode 2 |
@@ -217,6 +228,7 @@ You can also use `OPENCODE_GO_API_KEY` instead of a file.
 - **OpenCode Go shows 401/403**: the key is invalid, expired or lacks permissions; create a personal **All** key (service-account keys cannot read billing)
 - **Data looks old or the age line is amber**: the panel is showing the last successful reading. Check the network or credentials; the hint on the line says what to do. To force a clean slate, delete `$XDG_CACHE_HOME/opencode-quota-extended/last-snapshot.json`
 - **Old `@opentui/solid` pinning bug**: use `^0.4.1 || ^0.5.0` and clean-install (`rm -rf node_modules && npm ci`)
+- **Plugin appears twice or one row says `failed`**: OpenCode 2's `plugin add` can append a second entry for the same package ([#56217](https://github.com/anomalyco/opencode/issues/56217)). Run `opencode plugin list`, remove the extra entry with `opencode plugin remove <spec>`, and reload.
 
 ### Development
 
