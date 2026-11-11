@@ -18,7 +18,7 @@ import {
 } from "../lib/freshness.js";
 
 export function ProviderCards(props: {
-  api: { theme: { current: TuiThemeCurrent } };
+  api: { theme: { current: TuiThemeCurrent }; app?: { version?: string } };
   provider: ProviderQuota;
   showOnlyMultiWindow: boolean;
   now: () => number;
@@ -253,7 +253,7 @@ export function ProviderCards(props: {
 }
 
 function WindowRow(props: {
-  api: { theme: { current: TuiThemeCurrent } };
+  api: { theme: { current: TuiThemeCurrent }; app?: { version?: string } };
   window: QuotaWindow;
   fetchedAt: string;
   now: () => number;
@@ -295,10 +295,8 @@ function WindowRow(props: {
         theme={theme()}
         barColor={barColor()}
         markerPercent={paceLine()}
-        // The tick must contrast with the bar's success/warning/error fill.
-        // In some v1 themes the warning color is the same amber as the bar, so
-        // use the theme's main text color and a heavier glyph.
         markerColor={theme().text}
+        legacy={isLegacyTui(props.api.app?.version)}
       />
       <box flexDirection="row" gap={0} justifyContent="space-between">
         <text fg={barColor()}>{percent()}% left</text>
@@ -325,6 +323,7 @@ function GaugeBar(props: {
   barColor: any;
   markerPercent?: number | null;
   markerColor?: any;
+  legacy?: boolean;
 }): JSX.Element {
   const clamped = Math.max(0, Math.min(100, props.percent));
   const WIDTH = 38;
@@ -361,18 +360,35 @@ function GaugeBar(props: {
   return (
     <box flexDirection="row" height={1}>
       {before ? <text fg={props.barColor}>{before}</text> : null}
-      {/* A one-cell background gap guarantees the tick stays visible even
-          when the theme uses the same color family for text and bars. */}
-      <text
-        fg={props.markerColor ?? props.barColor}
-        bg={props.theme.background}
-        attributes={TextAttributes.BOLD}
-      >
-        {"┃"}
-      </text>
+      {props.legacy ? (
+        // OpenCode 1 is often a monochrome amber theme: an amber tick
+        // disappears into the bar. Invert the cell instead, so the marker is
+        // a dark line inside a solid text-colored block.
+        <text
+          fg={props.theme.text}
+          bg={props.theme.background}
+          attributes={TextAttributes.BOLD}
+        >
+          {"▌"}
+        </text>
+      ) : (
+        // OpenCode 2 keeps the original bright, thick line on a dark gap.
+        <text
+          fg={props.markerColor ?? props.barColor}
+          bg={props.theme.background}
+          attributes={TextAttributes.BOLD}
+        >
+          {"┃"}
+        </text>
+      )}
       {after ? <text fg={props.barColor}>{after}</text> : null}
     </box>
   );
+}
+
+function isLegacyTui(version: string | undefined): boolean {
+  const major = Number.parseInt((version ?? "").replace(/^v/i, ""), 10);
+  return Number.isFinite(major) && major < 2;
 }
 
 function compactProviderLabel(label: string): string {

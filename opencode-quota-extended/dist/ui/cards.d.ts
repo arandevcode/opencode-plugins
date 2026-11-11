@@ -6,6 +6,9 @@ export declare function ProviderCards(props: {
         theme: {
             current: TuiThemeCurrent;
         };
+        app?: {
+            version?: string;
+        };
     };
     provider: ProviderQuota;
     showOnlyMultiWindow: boolean;
