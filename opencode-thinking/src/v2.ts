@@ -156,7 +156,7 @@ export function createThinkingV2Api(context: V2ThinkingContext, cleanups: Array<
           },
         }));
       }
-      const home = input.slots.home_prompt;
+      const home = input.slots.home_prompt_right ?? input.slots.home_prompt;
       if (home && context.ui?.slot) {
         cleanups.push(context.ui.slot({
           append: "home.footer.status",
@@ -167,7 +167,7 @@ export function createThinkingV2Api(context: V2ThinkingContext, cleanups: Array<
           },
         }));
       }
-      const sidebar = input.slots.sidebar_title;
+      const sidebar = input.slots.sidebar_status ?? input.slots.sidebar_content ?? input.slots.sidebar_title;
       if (sidebar && context.ui?.slot) {
         cleanups.push(context.ui.slot({
           before: "sidebar.footer",
@@ -187,9 +187,9 @@ export function createThinkingV2Api(context: V2ThinkingContext, cleanups: Array<
       context.keymap?.layer?.(() => ({
         mode: "global",
         commands: (input?.commands ?? []).map((command: any) => ({
-          id: command.id,
-          title: command.name ?? command.id,
-          group: command.category,
+          name: command.name ?? command.id,
+          title: command.title ?? command.name ?? command.id,
+          category: command.category ?? command.group,
           run: command.run,
         })),
         bindings: [],

@@ -37,6 +37,35 @@ test("V2 command transform writes the state file", async () => {
   }
 })
 
+test("V2 keymap forwards valid command names", () => {
+  let layer
+  const api = createThinkingV2Api(
+    {
+      keymap: { layer: (factory) => { layer = factory() } },
+    },
+    [],
+  )
+
+  api.keymap.registerLayer({
+    commands: [
+      {
+        name: "opencode-thinking.toggle-a",
+        title: "Thinking Visual: Toggle Border",
+        category: "opencode-thinking",
+        run: () => {},
+      },
+    ],
+    bindings: [],
+  })
+
+  assert.equal(layer.commands.length, 1)
+  assert.equal(layer.commands[0].name, "opencode-thinking.toggle-a")
+  assert.equal(layer.commands[0].title, "Thinking Visual: Toggle Border")
+  assert.equal(layer.commands[0].category, "opencode-thinking")
+  assert.equal("id" in layer.commands[0], false)
+  assert.equal("group" in layer.commands[0], false)
+})
+
 test("V2 TUI adapter maps slots and forwards every session", async () => {
   const slots = []
   let listener

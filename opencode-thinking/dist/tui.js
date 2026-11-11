@@ -1,6 +1,6 @@
-import { jsx as _jsx, jsxs as _jsxs } from "@opentui/solid/jsx-runtime";
+import { jsxs as _jsxs, jsx as _jsx } from "@opentui/solid/jsx-runtime";
 /** @jsxImportSource @opentui/solid */
-import { createSignal, ErrorBoundary, untrack } from "solid-js";
+import { createSignal, ErrorBoundary } from "solid-js";
 import { readFileSync, existsSync } from "node:fs";
 import { TextAttributes } from "@opentui/core";
 import { getStatePath } from "./types.js";
@@ -317,50 +317,94 @@ export const thinkingVisual = async (api, options) => {
     function spinnerPrefix() {
         return thinking() ? SPINNER[spinnerIdx()] + " " : "";
     }
-    // Stable (created once) hint: only its text content is reactive.
-    function busyHint() {
-        return _jsx("text", { fg: colorForPhase(), children: spinnerPrefix() });
+    // A: state badge inside the host prompt's right slot. That slot is additive:
+    // it nests inside whichever session_prompt wins, so this plugin never owns
+    // (or duplicates) the prompt itself and coexists with other TUI plugins that
+    // also render a composer.
+    function statusBadge() {
+        if (!showA())
+            return null;
+        const color = (refreshTheme(), colorForPhase());
+        return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [spinnerPrefix(), status().label] }) }) }));
     }
-    // Constant element structure: toggling state only changes props, so the
-    // wrapped prompt is never unmounted.
+    // A0: v1 composer border. We are the only session_prompt owner, so we build
+    // the host prompt ourselves and wrap it in a stable bordered box. The tree
+    // never changes shape, so toggling the border does not remount the prompt
+    // (keeps Esc/interrupt wiring intact).
     function wrapPrompt(prompt) {
-        return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { children: [_jsx("box", { flexDirection: "row", justifyContent: "flex-end", height: showA() ? undefined : 0, overflow: "hidden", children: _jsx("box", { borderStyle: "heavy", borderColor: (refreshTheme(), colorForPhase()), paddingX: 1, children: _jsxs("text", { fg: colorForPhase(), attributes: TextAttributes.BOLD, children: [spinnerPrefix(), status().label] }) }) }), prompt
-                        ? _jsx("box", { border: showA(), borderStyle: "heavy", borderColor: colorForPhase(), children: prompt })
-                        : null] }) }));
+        const color = (refreshTheme(), colorForPhase());
+        return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { border: showA(), borderStyle: "heavy", borderColor: color, children: prompt }) }));
     }
     api.slots.register({
         slots: {
-            // A: prompt border + state band.
-            // IMPORTANT: the slot function must NOT read signals at its top level.
-            // Slots are re-run when a tracked signal changes; the spinner/color
-            // signals tick every 120-250ms, which re-created api.ui.Prompt each time.
-            // That remounted the prompt, resetting its focus and the "esc again to
-            // interrupt" counter, so Esc never interrupted a running session.
-            // The prompt is built once (untracked) and only the wrapper is reactive.
-            session_prompt: (ctx, props) => untrack(() => {
+            session_prompt: (ctx, props) => {
                 if (!bridge)
                     requestFocus(props?.session_id);
+                const sessionID = props?.session_id;
                 const prompt = api.ui.Prompt({
-                    sessionID: props.session_id, visible: props.visible,
-                    disabled: props.disabled, onSubmit: props.on_submit,
-                    ref: props.ref, hint: busyHint(),
+                    sessionID,
+                    visible: props?.visible,
+                    disabled: props?.disabled,
+                    onSubmit: props?.on_submit,
+                    ref: props?.ref,
+                    right: sessionID
+                        ? _jsx(api.ui.Slot, { name: "session_prompt_right", session_id: sessionID })
+                        : undefined,
                 });
                 return wrapPrompt(prompt);
-            }),
-            home_prompt: (ctx, props) => untrack(() => {
+            },
+            home_prompt: (ctx, props) => {
                 if (!bridge)
                     requestFocus(undefined);
-                const prompt = api.ui.Prompt({ ref: props.ref, hint: busyHint() });
+                const prompt = api.ui.Prompt({
+                    ref: props?.ref,
+                    right: _jsx(api.ui.Slot, { name: "home_prompt_right" }),
+                });
                 return wrapPrompt(prompt);
-            }),
-            // B: sidebar state. On V2 this is appended to sidebar.footer, so it sits
-            // at the bottom of the sidebar just above the cwd:branch line.
-            sidebar_title: (ctx, props) => {
+            },
+            session_prompt_right: (ctx, props) => {
                 if (!bridge)
                     requestFocus(props?.session_id);
+                return statusBadge();
+            },
+            home_prompt_right: () => {
+                if (!bridge)
+                    requestFocus(undefined);
+                return statusBadge();
+            },
+            // B: sidebar state, v1. The footer slot is single_winner, so placing the
+            // status above the working-directory line requires owning the whole
+            // footer. Reproduce the host lines faithfully (same text and theme
+            // colors) so nothing is lost: [status] [dir:branch] [• OpenCode version].
+            sidebar_footer: (ctx, props) => {
+                if (!bridge)
+                    requestFocus(props?.session_id);
+                const color = (refreshTheme(), colorForPhase());
+                const t = cachedTheme ?? api.theme.current ?? {};
+                const sessionID = props?.session_id;
+                const sessionDirectory = sessionID
+                    ? api.state.session.get?.(sessionID)?.directory
+                    : undefined;
+                const directory = sessionDirectory || api.state.path.directory || process.cwd();
+                const home = process.env.HOME;
+                const short = home && (directory === home || directory.startsWith(home + "/"))
+                    ? "~" + directory.slice(home.length)
+                    : directory;
+                const branch = directory === api.state.path.directory ? api.state.vcs?.branch : undefined;
+                const location = branch ? short + ":" + branch : short;
+                const cut = location.lastIndexOf("/");
+                const parent = cut > 0 ? location.slice(0, cut) : "";
+                const name = cut >= 0 ? location.slice(cut + 1) : location;
+                const show = active.b() || idleActive("b");
+                return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsxs("box", { flexDirection: "column", gap: 1, width: "100%", children: [show ? (_jsx("box", { flexDirection: "row", width: "100%", paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [spinnerPrefix(), status().label] }) })) : null, _jsxs("text", { children: [_jsx("span", { style: { fg: t.textMuted }, children: parent }), "/", _jsx("span", { style: { fg: t.text }, children: name })] }), _jsxs("text", { children: [_jsx("span", { style: { fg: t.success }, children: "\u2022" }), " ", _jsx("b", { style: { fg: t.success }, children: "Open" }), _jsx("b", { style: { fg: t.text }, children: "Code" }), " ", _jsx("span", { style: { fg: t.textMuted }, children: api.app?.version ?? "" })] })] }) }));
+            },
+            // B2: sidebar status for the OpenCode 2 adapter. Never rendered by the
+            // v1 host (unknown slot); the v2 bridge maps it just above its own
+            // footer so OpenCode 2 keeps drawing its location/version lines.
+            sidebar_status: () => {
                 if (!active.b() && !idleActive("b"))
                     return null;
-                const color = colorForPhase();
+                const color = (refreshTheme(), colorForPhase());
                 return (_jsx(ErrorBoundary, { fallback: _jsx("text", { children: "\u26A0" }), children: _jsx("box", { flexDirection: "row", width: "100%", paddingX: 1, children: _jsxs("text", { fg: color, attributes: TextAttributes.BOLD, children: [spinnerPrefix(), status().label] }) }) }));
             },
             // C: full-width bordered bar above the composer (OpenCode 2 cannot
@@ -375,8 +419,8 @@ export const thinkingVisual = async (api, options) => {
     });
     api.keymap.registerLayer({
         commands: [
-            { id: "opencode-thinking.toggle-a", name: "Thinking Visual: Toggle Border", category: "opencode-thinking", run: () => { } },
-            { id: "opencode-thinking.toggle-b", name: "Thinking Visual: Toggle Sidebar", category: "opencode-thinking", run: () => { } },
+            { name: "opencode-thinking.toggle-a", title: "Thinking Visual: Toggle Border", category: "opencode-thinking", run: () => { } },
+            { name: "opencode-thinking.toggle-b", title: "Thinking Visual: Toggle Sidebar", category: "opencode-thinking", run: () => { } },
         ],
         bindings: [],
     });

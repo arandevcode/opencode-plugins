@@ -8,6 +8,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function fakeApi({ statuses = {}, children = {}, parents = {} } = {}) {
   const handlers = new Map()
   const disposers = []
+  const registered = []
+  const layers = []
+  let promptCalls = 0
   const api = {
     theme: {
       current: {
@@ -18,9 +21,9 @@ function fakeApi({ statuses = {}, children = {}, parents = {} } = {}) {
     event: {
       on(type, handler) { handlers.set(type, handler); return () => handlers.delete(type) },
     },
-    slots: { register() {} },
-    keymap: { registerLayer() {} },
-    ui: { Prompt: () => ({}), toast() {} },
+    slots: { register(plugin) { registered.push(plugin) } },
+    keymap: { registerLayer(input) { layers.push(input) } },
+    ui: { Prompt: () => { promptCalls += 1; return {} }, toast() {} },
     lifecycle: { onDispose(fn) { disposers.push(fn) } },
     state: {
       session: {
@@ -36,6 +39,9 @@ function fakeApi({ statuses = {}, children = {}, parents = {} } = {}) {
   }
   return {
     api,
+    registered,
+    layers,
+    get promptCalls() { return promptCalls },
     emit(type, event) {
       const id = event?.properties?.sessionID
       if (id && type === "session.status") statuses[id] = event.properties.status
@@ -124,6 +130,33 @@ test("V1 counts nested subagents", async () => {
     harness.api.__thinkingSetFocus("root")
     await sleep(20)
     assert.equal(harness.api.__thinkingGetStatus().mode, "working")
+  } finally {
+    harness.dispose()
+  }
+})
+
+test("V1 owns the composer wrapper without creating a second prompt", async () => {
+  const harness = fakeApi()
+  await thinkingVisual(harness.api, { a: true, b: true })
+  try {
+    const keys = harness.registered.flatMap((plugin) => Object.keys(plugin.slots))
+    assert.ok(keys.includes("session_prompt"))
+    assert.ok(keys.includes("home_prompt"))
+    assert.ok(keys.includes("session_prompt_right"))
+    assert.ok(keys.includes("home_prompt_right"))
+    assert.ok(keys.includes("sidebar_footer"))
+    assert.ok(keys.includes("sidebar_status"))
+    assert.ok(!keys.includes("sidebar_content"))
+    assert.ok(!keys.includes("sidebar_title"))
+    assert.equal(harness.promptCalls, 0)
+
+    const commands = harness.layers.at(-1).commands
+    assert.equal(commands.length, 2)
+    for (const command of commands) {
+      assert.equal(command.name, command.name.trim())
+      assert.ok(!/\s/.test(command.name), `command name has whitespace: ${command.name}`)
+      assert.ok(command.title)
+    }
   } finally {
     harness.dispose()
   }
