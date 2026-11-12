@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 — 2026-11-12
+- Change: on OpenCode 2 the status badge now lives in the host prompt's additive right slot and the sidebar status sits above the host footer, so OpenCode 2 keeps its own location and version lines and the plugin never owns (or duplicates) the prompt. It coexists with other TUI plugins that render a composer.
+- Fix: keymap commands use `name`/`category` instead of `id`/`group`.
+- Change: the OpenCode 1.x composer border wraps the host prompt in a stable bordered box, so toggling it never remounts the prompt.
+
 ## 0.4.0 — 2026-11-10
 - Fix: the band stayed on `IDLE` while subagents were running. `WORKING` now covers the main turn **and every subagent**, foreground or background, nested at any depth.
 - New: `WAITING · TASK` / `WAITING · 2 TASKS` in amber on OpenCode 2 when the turn is over but a background shell is still alive. OpenCode 1.x has no reliable plugin-facing signal for this, so it goes `WORKING` → `IDLE` there.
