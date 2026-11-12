@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { loadCardsConfig } from "../dist/config/loader.js";
 import { collectSnapshot } from "../dist/providers/registry.js";
-import { renderProgressBar, trafficLight } from "../dist/ui/progress-bar.js";
+import { trafficLight } from "../dist/ui/progress-bar.js";
 import { formatResetCombined } from "../dist/lib/reset-format.js";
 import { formatBalance, formatWindowSpend } from "../dist/lib/balance.js";
 import {
@@ -15,6 +15,12 @@ import {
   windowResetSinceReading,
 } from "../dist/lib/freshness.js";
 import { loadSnapshotCache, saveSnapshotCache } from "../dist/lib/snapshot-cache.js";
+import { readActiveOpenCodeGoAccount } from "../dist/lib/opencode-go-config.js";
+import {
+  isActiveGoProvider,
+  windowPaceText,
+  windowTickBar,
+} from "../dist/lib/cli-format.js";
 
 const INDENT = 4;
 
@@ -26,6 +32,7 @@ const COLORS = {
 };
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
+const TICK = "\x1b[1;97m";
 const DIM = "\x1b[2m";
 
 function stripAnsi(s) {
@@ -66,6 +73,7 @@ async function main() {
   const snapshot = await collectSnapshot(config, cached?.snapshot);
   await saveSnapshotCache(snapshot);
   const now = Date.now();
+  const activeAccount = await readActiveOpenCodeGoAccount();
 
   for (const provider of snapshot.providers) {
     if (provider.status === "skipped") continue;
@@ -88,8 +96,11 @@ async function main() {
     }
 
     const credit = formatBalance(provider.balance);
+    const active = isActiveGoProvider(provider.id, activeAccount);
     console.log(
-      `  ${BOLD}${provider.label}${RESET}${credit ? `  ${COLORS.accent}${credit}${RESET}` : ""}`,
+      `${active ? `${COLORS.warning}●${RESET} ` : "  "}${BOLD}${provider.label}${RESET}` +
+        `${active ? ` ${DIM}active${RESET}` : ""}` +
+        `${credit ? `  ${COLORS.accent}${credit}${RESET}` : ""}`,
     );
 
     const stale =
@@ -115,18 +126,30 @@ async function main() {
       const pct = win.percentRemaining;
       const light = trafficLight(pct);
       const color = COLORS[light];
-      const bar = renderProgressBar(pct, barWidth);
+      const bar = windowTickBar(win, barWidth, now);
       const resetT = formatResetCombined(win.resetTimeIso);
       const resetStyle = resetT ? (light === "error" ? `${color}${resetT}${RESET}` : `${DIM}${resetT}${RESET}`) : "";
 
       const labelStr = windowLabel(win);
       console.log(" ".repeat(INDENT) + padRight(labelStr, resetStyle));
-      console.log(" ".repeat(INDENT) + color + bar.filled + bar.empty + RESET);
+      console.log(
+        " ".repeat(INDENT) +
+          color + bar.before + RESET +
+          (bar.tick ? TICK + bar.tick + RESET : "") +
+          color + bar.after + RESET,
+      );
       const leftStr = `${color}${pct}% left${RESET}`;
       const rightStr = `${DIM}${usedPct(pct)}${RESET}`;
       console.log(" ".repeat(INDENT) + padRight(leftStr, rightStr));
       const spend = formatWindowSpend(win);
-      if (spend) console.log(" ".repeat(INDENT) + DIM + spend + RESET);
+      const pace = windowPaceText(win, now);
+      if (pace) {
+        const paceColor = pace.tone === "ok" ? COLORS.ok : pace.tone === "error" ? COLORS.error : DIM;
+        const spendStr = spend ? DIM + spend + RESET : "";
+        console.log(" ".repeat(INDENT) + padRight(spendStr, paceColor + pace.text + RESET));
+      } else if (spend) {
+        console.log(" ".repeat(INDENT) + DIM + spend + RESET);
+      }
       if (windowResetSinceReading(win.resetTimeIso, provider.fetchedAt, now)) {
         console.log(
           " ".repeat(INDENT) +
