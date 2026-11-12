@@ -1,12 +1,14 @@
 /** @jsxImportSource @opentui/solid */
-import { For } from "solid-js";
+import { For, createSignal } from "solid-js";
 import { TextAttributes } from "@opentui/core";
 import type { JSX } from "@opentui/solid";
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui";
 import type { CardsPluginConfig } from "../config/defaults.js";
 import type { CardsSnapshot } from "../lib/types.js";
+import { actionableHint } from "../lib/freshness.js";
 import type { ExpansionState } from "./expansion.js";
 import { ProviderCards } from "./cards.js";
+import { panelLayout, unconfiguredSummary } from "./panel-layout.js";
 
 export function SidebarPanel(props: {
   api: TuiPluginApi;
@@ -20,22 +22,23 @@ export function SidebarPanel(props: {
 }): JSX.Element {
   const theme = () => props.api.theme.current;
   const titleColor = () => theme().text;
+  const muted = () => theme().textMuted;
 
-  const providerCount = () =>
-    props.snapshot().providers.filter(
-      (p) => p.status === "ok" || p.status === "stale",
-    ).length;
-  const totalCount = () => props.snapshot().providers.length;
+  const layout = () =>
+    panelLayout(props.snapshot().providers, props.activeProviderId());
+  const [setupOpen, setSetupOpen] = createSignal(false);
 
   return (
     <box flexDirection="column" gap={0}>
       <box flexDirection="row" gap={1}>
         <text fg={titleColor()} attributes={TextAttributes.BOLD}>
-          Quota  ({providerCount()}/{totalCount()})
+          {layout().total > 0
+            ? `Quota  (${layout().ready}/${layout().total})`
+            : "Quota"}
         </text>
       </box>
       <box flexDirection="column" gap={1}>
-        <For each={props.snapshot().providers}>
+        <For each={layout().cards}>
           {(p) => (
             <ProviderCards
               api={props.api}
@@ -59,6 +62,31 @@ export function SidebarPanel(props: {
             />
           )}
         </For>
+        {layout().unconfigured.length > 0 ? (
+          <box flexDirection="column" gap={0} paddingLeft={1}>
+            <box
+              flexDirection="row"
+              gap={1}
+              onMouseDown={() => setSetupOpen(!setupOpen())}
+            >
+              <text fg={muted()} wrapMode="none">
+                {setupOpen() ? "▾" : "▸"}
+              </text>
+              <text fg={muted()} wrapMode="none" truncate flexShrink={1}>
+                {unconfiguredSummary(layout().unconfigured)}
+              </text>
+            </box>
+            {setupOpen() ? (
+              <For each={layout().unconfigured}>
+                {(p) => (
+                  <text fg={muted()} wrapMode="word">
+                    {`${p.label}: ${actionableHint(p.hint) ?? "configuration required"}`}
+                  </text>
+                )}
+              </For>
+            ) : null}
+          </box>
+        ) : null}
       </box>
     </box>
   );
