@@ -1,8 +1,17 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Barra lateral TUI" width="420">
-  <br>
-  <sub><em>-sidebar example-</em></sub>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" valign="top">
+      <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="Barra lateral TUI" width="400">
+      <br>
+      <sub><em>Una sesión real de OpenCode 2: Copilot y OpenCode Go configurados, el de esta sesión desplegado y OpenAI plegado en una sola línea &ldquo;not set up&rdquo;</em></sub>
+    </td>
+    <td align="center" valign="top">
+      <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.gif" alt="Desplegar y plegar las tarjetas de cada proveedor" width="400">
+      <br>
+      <sub><em>Clic en una cabecera para plegar o desplegar la tarjeta; la cuenta activa (<code>GO (personal)</code>) conserva su marco. Sesión real, importes inventados, puntero dibujado</em></sub>
+    </td>
+  </tr>
+</table>
 
 # @arandevcode/opencode-quota-extended
 
@@ -134,12 +143,12 @@ npm run quota                 # desde el directorio del repo
 <p align="center">
   <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_cli.png" alt="Salida CLI" width="620">
   <br>
-  <sub><em>-cli example-</em></sub>
+  <sub><em>La CLI <code>quota</code>: cuenta activa marcada con <code>●</code>, marca de ritmo en cada barra y el texto de ritmo a la derecha</em></sub>
 </p>
 
 Colores de semáforo: verde (ok), naranja (advertencia), rojo (error). Todos los colores vienen del tema activo de OpenCode — se adaptan automáticamente a la paleta del usuario.
 
-Cada proveedor muestra también la antigüedad de su lectura (`just now`, `2m ago`). Si la última consulta falla, la CLI conserva la última lectura correcta y la marca como caducada en vez de eliminar la tarjeta.
+Cada proveedor muestra también la antigüedad de su lectura (`just now`, `2m ago`). Si la última consulta falla, la CLI conserva la última lectura correcta y la marca como caducada en vez de eliminar la tarjeta. La cuenta de OpenCode Go que el selector de cuentas marca como activa (`opencode-go-active.json`) lleva un `●` y la palabra `active`, cada barra tiene la misma marca de ritmo que la sidebar, y el ritmo (`margin +34% · 2d 9h`, `ahead -12% · 1h 20m` u `on pace`) va a la derecha de la fila de gasto.
 
 ## Configuración
 
@@ -172,7 +181,7 @@ Cada tarjeta muestra la antigüedad de su lectura en la misma línea que el nomb
 run /connect, choose ChatGPT
 ```
 
-Las tarjetas se adaptan a la sesión. El proveedor que usa la sesión actual empieza desplegado y lleva un carril izquierdo y un punto amarillos; el resto se contrae a dos líneas: nombre y antigüedad, y debajo un resumen compacto de ventanas (`5h 98% · wk 80% · mo 78%`) con el saldo. Así el nombre tiene más sitio; los proveedores conocidos se abrevian en sidebars estrechas (`GO (aRaN)`, `Copilot (Individual)`). Todas las tarjetas reservan las mismas columnas de borde, y la activa se enmarca con una línea amarilla sólida redondeada y un poco de espacio interior horizontal, así las filas activas e inactivas quedan alineadas. Haz clic en la cabecera (o en su línea de resumen) para desplegar o contraer. Cada sesión recuerda sus tarjetas abiertas, así que al cambiar de pestaña recuperas la vista que dejaste. Cuando la sesión usa OpenCode Go, la cuenta con nombre activa según `opencode-go-active.json` es la resaltada. El pie de la sidebar también muestra la versión de OpenCode del host (`OpenCode 2.2.5`).
+Las tarjetas se adaptan a la sesión. El proveedor que usa la sesión actual empieza desplegado y lleva un carril izquierdo y un punto amarillos; el resto se contrae a dos líneas: nombre y antigüedad, y debajo un resumen compacto de ventanas (`5h 98% · wk 80% · mo 78%`) con el saldo. Así el nombre tiene más sitio; los proveedores conocidos se abrevian en sidebars estrechas (`GO (personal)`, `Copilot (Individual)`). Todas las tarjetas reservan las mismas columnas de borde, y la activa se enmarca con una línea amarilla sólida redondeada y un poco de espacio interior horizontal, así las filas activas e inactivas quedan alineadas. Haz clic en la cabecera (o en su línea de resumen) para desplegar o contraer. Cada sesión recuerda sus tarjetas abiertas, así que al cambiar de pestaña recuperas la vista que dejaste. Cuando la sesión usa OpenCode Go, la cuenta con nombre activa según `opencode-go-active.json` es la resaltada. El pie de la sidebar también muestra la versión de OpenCode del host (`OpenCode 2.2.5`). Los proveedores sin configurar (sin credenciales) no cuentan en la cabecera ni tienen tarjeta: se pliegan en una sola línea atenuada `not set up: OpenAI` que se despliega con los pasos de configuración. El proveedor que usa la sesión actual conserva siempre su tarjeta, así que si le falta la clave sigue viendo su aviso.
 
 La acción reutiliza el hint de configuración existente para fallos de credenciales; en fallos de red indica que el panel reintenta automáticamente. Un reloj de UI de 30 s actualiza estas etiquetas sin hacer peticiones a las APIs. Si una ventana de cuota se reseteó después de tomar la lectura, la tarjeta añade `window reset since this reading` para que un porcentaje antiguo no se confunda con datos actuales.
 

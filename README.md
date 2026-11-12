@@ -21,8 +21,8 @@ Suite of plugins for [OpenCode](https://opencode.ai).
 
 | Plugin | Type | npm | Version | Description |
 |--------|------|-----|---------|-------------|
-| opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.4.0 | WORKING / WAITING / IDLE status band with subagent-aware state, theme-aware border + sidebar |
-| opencode-quota-extended | `🧩 plugin` | `@arandevcode/opencode-quota-extended` | 0.4.0 | OpenCode Go quota/spend/balance via personal API key, per-window cards with reading age + stale fallback + CLI |
+| opencode-thinking | `🧩 plugin` | `@arandevcode/opencode-thinking` | 0.5.0 | WORKING / WAITING / IDLE status band with subagent-aware state, theme-aware border + sidebar |
+| opencode-quota-extended | `🧩 plugin` | `@arandevcode/opencode-quota-extended` | 0.5.0 | OpenCode Go quota/spend/balance via personal API key, session-aware per-window cards with pace tick, reading age + stale fallback + CLI |
 
 ## Install
 

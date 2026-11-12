@@ -1,8 +1,17 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="TUI sidebar" width="420">
-  <br>
-  <sub><em>-sidebar example-</em></sub>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" valign="top">
+      <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.png" alt="TUI sidebar" width="400">
+      <br>
+      <sub><em>A real OpenCode 2 session: Copilot and OpenCode Go configured, the one this session uses expanded, OpenAI folded into a single &ldquo;not set up&rdquo; line</em></sub>
+    </td>
+    <td align="center" valign="top">
+      <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_sidebar_v2.gif" alt="Expanding and collapsing the provider cards" width="400">
+      <br>
+      <sub><em>Click a header to fold or unfold a card; the active account (<code>GO (personal)</code>) keeps its frame. Real session, made-up amounts, pointer drawn</em></sub>
+    </td>
+  </tr>
+</table>
 
 # @arandevcode/opencode-quota-extended
 
@@ -135,12 +144,12 @@ npm run quota                 # from the repo directory
 <p align="center">
   <img src="https://raw.githubusercontent.com/arandevcode/opencode-plugins/main/opencode-quota-extended/images/opencode_quota_extended_cli.png" alt="CLI output" width="620">
   <br>
-  <sub><em>-cli example-</em></sub>
+  <sub><em>The <code>quota</code> CLI: active account marked with <code>●</code>, pace tick on each bar and the pace text on the right</em></sub>
 </p>
 
 Traffic-light colors: green (ok), orange (warning), red (error). All colors come from the active OpenCode theme — they adapt to the user's palette automatically.
 
-Each provider also shows its reading age (`just now`, `2m ago`). If the last fetch failed, the CLI keeps the last successful reading and marks it as stale instead of dropping the card.
+Each provider also shows its reading age (`just now`, `2m ago`). If the last fetch failed, the CLI keeps the last successful reading and marks it as stale instead of dropping the card. The OpenCode Go account marked active by the account switcher (`opencode-go-active.json`) gets a `●` and the word `active`, each bar carries the same pace tick as the sidebar, and the pace (`margin +34% · 2d 9h`, `ahead -12% · 1h 20m` or `on pace`) sits at the right of the spend row.
 
 ## Configuration
 
@@ -173,7 +182,7 @@ Every card shows the age of its reading inline with the provider name, e.g. `2m 
 run /connect, choose ChatGPT
 ```
 
-Cards are session-aware. The provider used by the current session starts expanded and gets a yellow left rail and bullet; the other cards collapse to two lines: the provider name and age, then a compact window summary (`5h 98% · wk 80% · mo 78%`) with the balance. Keeping the summary on its own line leaves room for the name; known providers are abbreviated in narrow sidebars (`GO (aRaN)`, `Copilot (Individual)`). Every card reserves the same border columns, and the active card is outlined with a solid rounded yellow frame and a little horizontal inner padding, so active and inactive rows line up. Click a provider header (or its summary line) to expand or collapse it. Each session remembers its own open cards, so switching tabs restores the view you left there. When the session uses OpenCode Go, the active named account from `opencode-go-active.json` is the one highlighted. The sidebar footer also shows the host OpenCode version (`OpenCode 2.2.5`).
+Cards are session-aware. The provider used by the current session starts expanded and gets a yellow left rail and bullet; the other cards collapse to two lines: the provider name and age, then a compact window summary (`5h 98% · wk 80% · mo 78%`) with the balance. Keeping the summary on its own line leaves room for the name; known providers are abbreviated in narrow sidebars (`GO (personal)`, `Copilot (Individual)`). Every card reserves the same border columns, and the active card is outlined with a solid rounded yellow frame and a little horizontal inner padding, so active and inactive rows line up. Click a provider header (or its summary line) to expand or collapse it. Each session remembers its own open cards, so switching tabs restores the view you left there. When the session uses OpenCode Go, the active named account from `opencode-go-active.json` is the one highlighted. The sidebar footer also shows the host OpenCode version (`OpenCode 2.2.5`). Providers you have not set up (no credentials at all) do not count in the header and do not get a card: they fold into one muted `not set up: OpenAI` line that expands to the setup steps. The provider the current session uses always keeps its card, so a missing key there still shows its hint.
 
 The action reuses the existing setup hint for credential failures; network failures say that the panel retries automatically. A 30 s UI clock updates these labels without making API requests. If a quota window reset after the reading was taken, the card adds `window reset since this reading` so an old percentage is not mistaken for current data.
 
